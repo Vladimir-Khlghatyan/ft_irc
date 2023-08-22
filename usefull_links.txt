@@ -6,6 +6,9 @@ https://www.youtube.com/watch?v=I9o-oTdsMgI&list=PLUJCSGGiox1Q-QvHfMMydtoyEa1IEz
 
 *****Socket Programming In C++:A Beginner's Guide****
 
-
 https://marketsplash.com/tutorials/cpp/cplusplus-scoket/#google_vignette
 
+
+******Multiple Chat Clients: One Thread (in C++)******
+
+https://www.youtube.com/watch?v=dquxuXeZXgo&t=1s
