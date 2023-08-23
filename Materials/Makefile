@@ -1,5 +1,5 @@
 NAME	=	ft_irc
-NAMECLIENT	=	ft_irc_client
+# NAMECLIENT	=	ft_irc_client
 
 CPP		=	c++
 
@@ -26,8 +26,8 @@ OBJCLIENT	=	${SRCSCLIENT:.cpp=.o}
 all:		${NAME}
 
 ${NAME}:	${OBJ} ${OBJCLIENT}
-	${CPP} ${CPPFLAGS} ${OBJ} -o ${NAME}
-	${CPP} ${CPPFLAGS} ${OBJCLIENT} -o ${NAMECLIENT}
+	${CPP} ${CPPFLAGS} ${OBJ} ${OBJCLIENT} -o ${NAME}
+# ${CPP} ${CPPFLAGS}  -o ${NAMECLIENT}
 
 clean:
 		   	${RMIF} ${OBJ} ${OBJCLIENT}

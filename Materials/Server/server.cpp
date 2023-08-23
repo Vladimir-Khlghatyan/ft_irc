@@ -47,6 +47,7 @@ void    Server::initValueStruct(void)
 
 void    Server::bindListnServer(void)
 {
+    int opt = 1;
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_server_fd == -1)
         throw Server::Excp("server socket not created");
@@ -59,27 +60,26 @@ void    Server::bindListnServer(void)
     //  network interfaces on the machine
     inet_pton(AF_INET, "0.0.0.0", &_client_addr.sin_addr);
 
-    if (bind(_server_addr,(struct sockaddr*)&_server_addr, sizeof(_server_addr)) == -1)
+    if (bind(_server_fd, (struct sockaddr*)&_server_addr, sizeof(_server_addr)) == -1)
         throw Server::Excp("server can not bind");
     
     // Listen for incoming connections
-    if (listen(listening, SOMAXCONN) == -1)
+    if (listen(_server_fd , SOMAXCONN) == -1)
     {
-        close(_server_addr);
+        close(_server_fd);
         throw Server::Excp("server can not listening");
     }
 }
 
 void    Server::ClientConnect(void)
 {
-    FD_ZERO(_All_fds);      //clear fd is set 
-    FD_SET(_server_fd, _All_fds);
-    timeout.tv_sec = 5;     //time wait
-    timeout.tv_usec = 0;
+    FD_ZERO(&_All_fds);      //clear fd is set 
+    FD_SET(_server_fd, &_All_fds);
+    _timeout.tv_sec = 3;     //time wait
+    _timeout.tv_usec = 0;
 
-    if (is_Exit)
-        break;
-    _ready_fds = select(_max_fd, &_All_fds, NULL, NULL, &timeout);
+
+    _ready_fds = select(_max_fd, &_All_fds, NULL, NULL, &_timeout);
     std::cout<<"//ready for the specified events  _ready_fds == "<<_ready_fds<<std::endl;//ALL fd hav events
     if (_ready_fds == -1)
     {
@@ -93,8 +93,9 @@ void    Server::ClientConnect(void)
     }
     else
     {
-        if (FD_ISSET(_server_fd, &_All_fds))
+        if (FD_ISSET(_server_fd, &_All_fds)) // verify that the file descriptor conforms to the standard list
         {
+            _client_fd = 0;
             _client_fd = accept(_server_fd, (struct sockaddr*)&_client_addr, &_len);
             if (_client_fd == -1)
             {
@@ -105,7 +106,8 @@ void    Server::ClientConnect(void)
 
             // Add the new client_fd to the set
             FD_SET(_client_fd, &_All_fds);
-            this->_Clients.insert(pair<int, Client>(_client_fd, Client(_client_fd)));
+            Client *new_Client = new Client(_client_fd);
+            this->_Clients.insert(std::pair<int, Client*>(_client_fd, new_Client));
             if (_client_fd > _max_fd)
             {
                 _max_fd = _client_fd + 1;
@@ -117,16 +119,51 @@ void    Server::ClientConnect(void)
 
 void    Server::ReadingforDescriptor(void)
 {
-    std::map<int, Client>::iterator it = this->_Clients.begin();
-    for( ;it != this->_Clients.end() ; it++)
+    std::map<int, Client*>::iterator it = this->_Clients.begin();
+    int sizeBuff = 0;
+    char buffer[4096];
+
+    for( ;it != this->_Clients.end() ; )
     {
+        // if (FD_ISSET(it->first, &_All_fds))
+        // {
+            sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
+            if (sizeBuff == -1)
+            {
+                std::cout<<" ReadingforDescriptor  {{-1}}"<<std::endl;
+                FD_CLR(it->first, &this->_All_fds);
+                close(it->first);
+                delete it->second;
+                this->_Clients.erase(it->first);
+                //throw Server::Excp("There was a connection issue");
+                std::cout<<"ERROR:  There was a connection issue fd=[ "<< it->first<<" ]" <<std::endl;
+            }
+            else if (sizeBuff == 0)
+            {
+                std::cout<<" ReadingforDescriptor  {{0}}"<<std::endl;
+                FD_CLR(it->first, &this->_All_fds);
+                close(it->first);
+                delete it->second;
+                this->_Clients.erase(it->first);
+                //throw Server::Excp("There was a connection issue");
+                std::cout<<"There client disconnected fd=[ "<< it->first<<" ]" <<std::endl;
+            }
+            else
+            {
+                it->second->setBuffer(buffer, sizeBuff);
+                std::cout<<"buffer write "<< buffer <<std::endl;
+                it++;
+            }
+            std::cout<<"buffer write8 "<< buffer <<std::endl;
+        // }
+        // else
+        //     it++;
         //--------------------------------------------------------------------------
     }
 }
 
 void    Server::mainServer(void)
 {
-    int opt = 1;
     this->initValueStruct();
 
     this->bindListnServer();
@@ -135,7 +172,10 @@ void    Server::mainServer(void)
 
     for( ; ;)
     {
+        std::cout<<"for loop start "<<std::endl;
         this->ClientConnect();
+        if (this->_is_Exit)
+            break ;
         // Check other file descriptors for reading
         this->ReadingforDescriptor();
     }

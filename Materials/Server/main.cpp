@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
         Server s(argv[1], argv[2]);
         s.Chack();
         std::cout<<"congratulations server is up and running"<<std::endl;
+        s.mainServer();
     }
     catch(const std::exception& e)
     {

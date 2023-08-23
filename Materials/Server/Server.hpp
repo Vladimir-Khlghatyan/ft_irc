@@ -1,14 +1,16 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-#include "Client.hpp"
+#include "../Client/Client.hpp"
 #include <iostream>
 #include <iterator>
 #include <arpa/inet.h> // Add this header for 'inet_addr'
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <exception>
-#include <string>
+#include <string.h>
+#include <cstring>
+#include <unistd.h>
 #include <map>
 // #include <netdb.h> // for f
 #include <netinet/in.h>
@@ -41,7 +43,7 @@ class Server
         bool _is_Exit;
         fd_set _All_fds;
         int _ready_fds;
-        std::map<int, Client> _Clients;
+        std::map<int, Client*> _Clients;
 
 };
 
