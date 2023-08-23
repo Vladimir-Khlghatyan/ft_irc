@@ -11,6 +11,7 @@
 #include <string.h>
 #include <cstring>
 #include <unistd.h>
+#include <fcntl.h>
 #include <map>
 // #include <netdb.h> // for f
 #include <netinet/in.h>
@@ -34,15 +35,15 @@ class Server
 				char *_s;
 		};
     private:
-        struct sockaddr_in _server_addr, _client_addr;
+        struct sockaddr_in _server_addr;
         socklen_t _len;
         std::string _password;
         int _port, _max_fd;
         int _server_fd, _client_fd;
         struct timeval _timeout;
         bool _is_Exit;
-        fd_set _All_fds;
-        int _ready_fds;
+        fd_set _WR_fds, _READ_fds, _ER_fds;
+        int _ready_FD;
         std::map<int, Client*> _Clients;
 
 };
