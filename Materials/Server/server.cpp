@@ -70,36 +70,35 @@ void    Server::bindListnServer(void)
         close(_server_fd);
         throw Server::Excp("server can not listening");
     }
+    //4 erroe
     fcntl(_server_fd, F_SETFL, O_NONBLOCK);
 }
 
 void    Server::ClientConnect(void)
 {
-    std::cout<<"<<<  A  >>>"<<std::endl;
     FD_ZERO(&_READ_fds);      //clear fd is set 
     FD_ZERO(&_WR_fds);      //clear fd is set
     FD_ZERO(&_ER_fds);      //clear fd is set
-    // FD_SET(_server_fd, &_READ_fds);
-    if (this->_Clients.empty())
-    {
-        std::cout<<"---<<1B>>---"<<std::endl;
-        FD_SET(_server_fd, &_READ_fds);
-        FD_SET(_server_fd, &_WR_fds);
-        FD_SET(_server_fd, &_ER_fds);
-    }
+
     _timeout.tv_sec = 2;     //time wait
     _timeout.tv_usec = 0;
-    std::map<int, Client*>::iterator it = this->_Clients.begin();
-    for( ;it != this->_Clients.end(); it++)
-    {
-        std::cout<<"  <<2B>>  "<<std::endl;
-        FD_SET(it->first, &_READ_fds);
-        FD_SET(it->first, &_WR_fds);
-        FD_SET(it->first, &_ER_fds);
-    }
-    _ready_FD = 0;
+    FD_SET(_server_fd, &_READ_fds);
+    FD_SET(_server_fd, &_WR_fds);
+    FD_SET(_server_fd, &_ER_fds);
+    // std::map<int, Client*>::iterator it = this->_Clients.begin();
+    // for( ;it != this->_Clients.end(); it++)
+    // {
+    //     std::cout<<it->first<<"  "; 
+    //     FD_SET(it->first, &_READ_fds);
+    //     FD_SET(it->first, &_WR_fds);
+    //     FD_SET(it->first, &_ER_fds);
+    // }
+    std::cout<<std::endl;
+    std::cout<<"-----------------------------111111\n";
     _ready_FD = select(_max_fd, &_READ_fds, NULL, NULL, &_timeout);
-    // std::cout<<"//ready for the specified events  _ready_FD == "<<_ready_FD<<std::endl;//ALL fd hav events
+    std::cout<<"-----------------------------222222 \n";
+    //ready for the specified events
+    std::cout<<"max ==" << _max_fd <<" _server_fd =="<<_server_fd << "  _ready_FD == "<< _ready_FD <<std::endl;//ALL fd hav events
     if (_ready_FD == -1)
     {
         close(_server_fd);
@@ -117,32 +116,33 @@ void    Server::ClientConnect(void)
         client_addr.sin_family = AF_INET;
         client_addr.sin_port = htons(_port);
         _len = sizeof(client_addr);
-        _client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &_len);
-
-        // fcntl(_client_fd, F_SETFL, O_NONBLOCK);
-        // verify that the file descriptor conforms to the standard list
+        
+        // Check if the listening socket is ready
         if (FD_ISSET(_server_fd, &_READ_fds) || FD_ISSET(_server_fd, &_WR_fds))
         {
-            if (_client_fd == -1)
-            {
-                close(_server_fd);
-                throw Server::Excp("Error :Server can not accept Client");
-            }
-            else if (_client_fd)
-            {
-                printf("1New connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+            _client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &_len);
 
-                // Add the new client_fd to the set
-                Client *new_Client = new Client(_client_fd);
-                this->_Clients.insert(std::pair<int, Client*>(_client_fd, new_Client));
-                if (_client_fd > _max_fd)
+            fcntl(_client_fd, F_SETFL, O_NONBLOCK);
+            // verify that the file descriptor conforms to the standard list
+                if (_client_fd == -1)
                 {
-                    _max_fd = _client_fd + 1;
+                    close(_server_fd);
+                    throw Server::Excp("Error :Server can not accept Client");
                 }
-            }
+                else if (_client_fd)
+                {
+                    printf("1New connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+
+                    // Add the new client_fd to the set
+                    Client *new_Client = new Client(_client_fd);
+                    this->_Clients.insert(std::pair<int, Client*>(_client_fd, new_Client));
+                    if (_client_fd >= _max_fd)
+                    {
+                        _max_fd = _client_fd + 1;
+                    }
+                }
         }
     }
-    std::cout<<"********************"<<std::endl;
 }
 
 
@@ -154,57 +154,59 @@ void    Server::ClientConnect(void)
 void    Server::ReadingforDescriptor(void)
 {
     std::map<int, Client*>::iterator it = this->_Clients.begin();
-    int sizeBuff = 0;
-    char buffer[4096] = {0};
-std::cout<<"9999999999999"<<std::endl;
+    // int sizeBuff = 0;
+    // char buffer[4096] = {0};
+
+
     for( ;it != this->_Clients.end(); it++)
     {
-        if (FD_ISSET(it->first, &_READ_fds))
-        {
-            if (sizeBuff == -1)
-            {
-                std::cout<<" ReadingforDescriptor  {{-1}}"<<std::endl;
-                FD_CLR(it->first, &this->_READ_fds);
-                close(it->first);
-                delete it->second;
-                this->_Clients.erase(it->first);
-                //throw Server::Excp("There was a connection issue");
-                std::cout<<"ERROR:  There was a connection issue fd=[ "<< it->first<<" ]" <<std::endl;
-                it--;
-            }
-            else if (sizeBuff == 0)
-            {
-                std::cout<<" ReadingforDescriptor  {{0}}"<<std::endl;
-                FD_CLR(it->first, &this->_READ_fds);
-                close(it->first);
-                delete it->second;
-                this->_Clients.erase(it->first);
-                //throw Server::Excp("There was a connection issue");
-                std::cout<<"There client disconnected fd=[ "<< it->first<<" ]" <<std::endl;
-                it--;
-            }
-            else
-            {
-                std::cout<<"!!!!!!!!!2222222\n";
-                it->second->setBuffer(buffer, sizeBuff);
-                std::cout<<"id =="<<it->first<<std::endl;
-                std::cout<<"1buffer write "<< buffer <<std::endl;
-                sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
-                std::cout<<"2buffer write "<< buffer <<std::endl;
-            }
-        }
-        else if (FD_ISSET(it->first, &_ER_fds))
-        {
-            // FD_CLR(it->first, &this->_READ_fds);
-            // FD_CLR(it->first, &this->_WR_fds);
-            // FD_CLR(it->first, &this->_ER_fds);
-            // close(it->first);
-            // delete it->second;
-            this->_Clients.erase(it->first);
-            it--;
-        }
+        std::cout<<"id ==   <<<"<<it->first<<">>>"<<std::endl;
+        // if (FD_ISSET(it->first, &_READ_fds))
+        // {
+            
+        //     std::cout<<"1buffer write "<< buffer <<std::endl;
+        //     sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
+        //     std::cout<<"2buffer write "<< buffer <<std::endl;
+
+        //     if (sizeBuff == -1)
+        //     {
+        //         std::cout<<" ReadingforDescriptor  {{-1}}"<<std::endl;
+        //         FD_CLR(it->first, &this->_READ_fds);
+        //         close(it->first);
+        //         delete it->second;
+        //         this->_Clients.erase(it->first);
+        //         //throw Server::Excp("There was a connection issue");
+        //         std::cout<<"ERROR:  There was a connection issue fd=[ "<< it->first<<" ]" <<std::endl;
+        //         it--;
+        //     }
+        //     else if (sizeBuff == 0)
+        //     {
+        //         std::cout<<" ReadingforDescriptor  {{0}}"<<std::endl;
+        //         FD_CLR(it->first, &this->_READ_fds);
+        //         close(it->first);
+        //         delete it->second;
+        //         this->_Clients.erase(it->first);
+        //         //throw Server::Excp("There was a connection issue");
+        //         std::cout<<"There client disconnected fd=[ "<< it->first<<" ]" <<std::endl;
+        //         it--;
+        //     }
+        //     else
+        //     {
+        //         std::cout<<"!!!!!!!!!2222222\n";
+        //         it->second->setBuffer(buffer, sizeBuff);
+        //     }
+        // }
+        // else if (FD_ISSET(it->first, &_ER_fds))
+        // {
+        //     // FD_CLR(it->first, &this->_READ_fds);
+        //     // FD_CLR(it->first, &this->_WR_fds);
+        //     // FD_CLR(it->first, &this->_ER_fds);
+        //     // close(it->first);
+        //     // delete it->second;
+        //     this->_Clients.erase(it->first);
+        //     it--;
+        // }
     }
-    std::cout<<"8888888888888"<<std::endl;
 }
 
 
@@ -217,11 +219,13 @@ void    Server::mainServer(void)
     this->initValueStruct();
 
     this->bindListnServer();
+    this->_Clients.insert(std::pair<int, Client*>(_server_fd, NULL));
     _max_fd = _server_fd + 1;
     std::cout << "Server listening on port "<< _port << std::endl;
 
     for( ; ;)
     {
+        std::cout<<"----------------- START -------------------  \n\n";
         this->ClientConnect();
         if (this->_is_Exit)
             break ;
