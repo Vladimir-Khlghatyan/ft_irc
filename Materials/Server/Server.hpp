@@ -26,6 +26,7 @@ class Server
         void ClientConnect(void);
         void ReadingforDescriptor(void);
         void mainServer(void);
+        void closeFreeALL(void);
         class Excp : public std::exception
 		{
 			public:
