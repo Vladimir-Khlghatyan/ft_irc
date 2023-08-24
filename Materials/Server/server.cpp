@@ -39,14 +39,16 @@ void    Server::initValueStruct(void)
     _server_addr.sin_port = htons(_port); // Port number
     _server_addr.sin_addr.s_addr = INADDR_ANY;// Accept connections from any IP address
 
-    _client_addr.sin_family = AF_INET;
-    _client_addr.sin_port = htons(_port);
-    _len = sizeof(_client_addr);
     _is_Exit = 0;
 }
 
+
+//-------------------------------------------      Server  Bind    ---------------
+
+
 void    Server::bindListnServer(void)
 {
+    int opt = 1;
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_server_fd == -1)
         throw Server::Excp("server socket not created");
@@ -57,86 +59,152 @@ void    Server::bindListnServer(void)
     // "0.0.0.0" represents an IPv4 address 
     // when you want to bind a socket to all available
     //  network interfaces on the machine
-    inet_pton(AF_INET, "0.0.0.0", &_client_addr.sin_addr);
+    // inet_pton(AF_INET, "0.0.0.0", &_client_addr.sin_addr);
 
-    if (bind(_server_addr,(struct sockaddr*)&_server_addr, sizeof(_server_addr)) == -1)
+    if (bind(_server_fd, (struct sockaddr*)&_server_addr, sizeof(_server_addr)) == -1)
         throw Server::Excp("server can not bind");
     
     // Listen for incoming connections
-    if (listen(listening, SOMAXCONN) == -1)
+    if (listen(_server_fd , SOMAXCONN) == -1)
     {
-        close(_server_addr);
+        close(_server_fd);
         throw Server::Excp("server can not listening");
     }
+    fcntl(_server_fd, F_SETFL, O_NONBLOCK);
 }
 
 void    Server::ClientConnect(void)
 {
-    FD_ZERO(_All_fds);      //clear fd is set 
-    FD_SET(_server_fd, _All_fds);
-    timeout.tv_sec = 5;     //time wait
-    timeout.tv_usec = 0;
+    FD_ZERO(&_READ_fds);      //clear fd is set 
+    FD_ZERO(&_WR_fds);      //clear fd is set
+    FD_ZERO(&_ER_fds);      //clear fd is set
 
-    if (is_Exit)
-        break;
-    _ready_fds = select(_max_fd, &_All_fds, NULL, NULL, &timeout);
-    std::cout<<"//ready for the specified events  _ready_fds == "<<_ready_fds<<std::endl;//ALL fd hav events
-    if (_ready_fds == -1)
+    _timeout.tv_sec = 2;     //time wait
+    _timeout.tv_usec = 0;
+    FD_SET(_server_fd, &_WR_fds);
+    std::map<int, Client*>::iterator it = this->_Clients.begin();
+    for( ;it != this->_Clients.end(); it++)
+    {
+        FD_SET(it->first, &_READ_fds);
+        // FD_SET(it->first, &_WR_fds); //because clients can always write
+        FD_SET(it->first, &_ER_fds);
+    }
+    _max_fd = (--it)->first + 1;
+    _ready_FD = select(_max_fd, &_READ_fds, &_WR_fds, &_ER_fds, &_timeout);
+
+    //ready for the specified events
+    if (_ready_FD == -1)
     {
         close(_server_fd);
        //all  close(_client_fd);
        throw Server::Excp("select all error");
     }
-    else if (_ready_fds == 0)
+    else if (_ready_FD == 0)
     {
-        std::cout<< "No activity within 5 seconds.\n" << std::endl;
+        std::cout<< "No activity within 2 seconds.\n" << std::endl;
     }
     else
     {
-        if (FD_ISSET(_server_fd, &_All_fds))
+        _client_fd = 0;
+        struct sockaddr_in client_addr;
+        client_addr.sin_family = AF_INET;
+        client_addr.sin_port = htons(_port);
+        _len = sizeof(client_addr);
+        
+        // Check if the listening socket is ready
+        if (FD_ISSET(_server_fd, &_READ_fds))
         {
-            _client_fd = accept(_server_fd, (struct sockaddr*)&_client_addr, &_len);
+            _client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &_len);
+
+            fcntl(_client_fd, F_SETFL, O_NONBLOCK);
+            // verify that the file descriptor conforms to the standard list
             if (_client_fd == -1)
             {
                 close(_server_fd);
                 throw Server::Excp("Error :Server can not accept Client");
             }
-            printf("New connection from %s:%d\n", inet_ntoa(_client_addr.sin_addr), ntohs(_client_addr.sin_port));
-
-            // Add the new client_fd to the set
-            FD_SET(_client_fd, &_All_fds);
-            this->_Clients.insert(pair<int, Client>(_client_fd, Client(_client_fd)));
-            if (_client_fd > _max_fd)
+            else if (_client_fd)
             {
-                _max_fd = _client_fd + 1;
+                printf("New connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+
+                // Add the new client_fd to the set
+                Client *new_Client = new Client(_client_fd);
+                this->_Clients.insert(std::pair<int, Client*>(_client_fd, new_Client));
             }
         }
     }
 }
 
 
+
+//------------------------------------------------------    iterator for Map   ------------------
+
+
+
 void    Server::ReadingforDescriptor(void)
 {
-    std::map<int, Client>::iterator it = this->_Clients.begin();
-    for( ;it != this->_Clients.end() ; it++)
+    std::map<int, Client*>::iterator it = this->_Clients.begin();
+    it++;                                                           //[0]index input _server_fd
+    int sizeBuff = 0;
+    char buffer[4096] = {0};
+
+    for( ;it != this->_Clients.end(); it++)
     {
-        //--------------------------------------------------------------------------
+        if (FD_ISSET(it->first, &_READ_fds))
+        {
+            sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
+
+            if (sizeBuff == -1)
+            {
+                FD_CLR(it->first, &this->_READ_fds);
+                close(it->first);
+                delete it->second;
+                this->_Clients.erase(it->first);
+                throw Server::Excp("ERROR: There was a connection issue");
+                it--;
+            }
+            else if (sizeBuff == 0)
+            {
+                FD_CLR(it->first, &this->_READ_fds);
+                close(it->first);
+                delete it->second;
+                this->_Clients.erase(it->first);
+                std::cout<<"There client disconnected fd=[ "<< it->first<<" ]" <<std::endl;
+                it--;
+            }
+            else
+            {
+                it->second->setBuffer(buffer, sizeBuff);
+            }
+        }
+        if (FD_ISSET(it->first, &_ER_fds))
+        {
+            std::cout<<" &_ER_fds)) "<<std::endl;
+        }
+        if (FD_ISSET(it->first, &_WR_fds))
+        {
+            std::cout<<" &_WR_fds))"<<std::endl;
+        }
     }
 }
 
+
+//---------------------------------------------------       Server Main  -------------------
+
+
+
 void    Server::mainServer(void)
 {
-    int opt = 1;
     this->initValueStruct();
 
     this->bindListnServer();
-    std::cout << "Server listening on port "<< _port << std::endl;
+    this->_Clients.insert(std::pair<int, Client*>(_server_fd, NULL));
     _max_fd = _server_fd + 1;
+    std::cout << "Server listening on port "<< _port << std::endl;
 
     for( ; ;)
     {
         this->ClientConnect();
-        // Check other file descriptors for reading
         this->ReadingforDescriptor();
     }
     std::cout<<"END :Server stopped"<<std::endl;
