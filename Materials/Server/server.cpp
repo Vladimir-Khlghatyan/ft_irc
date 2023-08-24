@@ -82,17 +82,17 @@ void    Server::ClientConnect(void)
 
     _timeout.tv_sec = 2;     //time wait
     _timeout.tv_usec = 0;
-    FD_SET(_server_fd, &_READ_fds);
-    FD_SET(_server_fd, &_WR_fds);
-    FD_SET(_server_fd, &_ER_fds);
-    // std::map<int, Client*>::iterator it = this->_Clients.begin();
-    // for( ;it != this->_Clients.end(); it++)
-    // {
-    //     std::cout<<it->first<<"  "; 
-    //     FD_SET(it->first, &_READ_fds);
-    //     FD_SET(it->first, &_WR_fds);
-    //     FD_SET(it->first, &_ER_fds);
-    // }
+    // FD_SET(_server_fd, &_READ_fds);
+    // FD_SET(_server_fd, &_WR_fds);
+    // FD_SET(_server_fd, &_ER_fds);
+    std::map<int, Client*>::iterator it = this->_Clients.begin();
+    for( ;it != this->_Clients.end(); it++)
+    {
+        std::cout<<it->first<<"  "; 
+        FD_SET(it->first, &_READ_fds);
+        FD_SET(it->first, &_WR_fds);
+        FD_SET(it->first, &_ER_fds);
+    }
     std::cout<<std::endl;
     std::cout<<"-----------------------------111111\n";
     _ready_FD = select(_max_fd, &_READ_fds, NULL, NULL, &_timeout);
@@ -118,7 +118,7 @@ void    Server::ClientConnect(void)
         _len = sizeof(client_addr);
         
         // Check if the listening socket is ready
-        if (FD_ISSET(_server_fd, &_READ_fds) || FD_ISSET(_server_fd, &_WR_fds))
+        if (FD_ISSET(_server_fd, &_READ_fds))
         {
             _client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &_len);
 
@@ -129,7 +129,8 @@ void    Server::ClientConnect(void)
                     close(_server_fd);
                     throw Server::Excp("Error :Server can not accept Client");
                 }
-                else if (_client_fd)
+                else
+                if (_client_fd)
                 {
                     printf("1New connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
@@ -154,48 +155,48 @@ void    Server::ClientConnect(void)
 void    Server::ReadingforDescriptor(void)
 {
     std::map<int, Client*>::iterator it = this->_Clients.begin();
-    // int sizeBuff = 0;
-    // char buffer[4096] = {0};
-
+    it++;
+    int sizeBuff = 0;
+    char buffer[4096] = {0};
 
     for( ;it != this->_Clients.end(); it++)
     {
         std::cout<<"id ==   <<<"<<it->first<<">>>"<<std::endl;
-        // if (FD_ISSET(it->first, &_READ_fds))
-        // {
+        if (FD_ISSET(it->first, &_READ_fds))
+        {
             
-        //     std::cout<<"1buffer write "<< buffer <<std::endl;
-        //     sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
-        //     std::cout<<"2buffer write "<< buffer <<std::endl;
+            std::cout<<"1buffer write "<< buffer <<std::endl;
+            sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
+            std::cout<<"2buffer write "<< buffer <<std::endl;
 
-        //     if (sizeBuff == -1)
-        //     {
-        //         std::cout<<" ReadingforDescriptor  {{-1}}"<<std::endl;
-        //         FD_CLR(it->first, &this->_READ_fds);
-        //         close(it->first);
-        //         delete it->second;
-        //         this->_Clients.erase(it->first);
-        //         //throw Server::Excp("There was a connection issue");
-        //         std::cout<<"ERROR:  There was a connection issue fd=[ "<< it->first<<" ]" <<std::endl;
-        //         it--;
-        //     }
-        //     else if (sizeBuff == 0)
-        //     {
-        //         std::cout<<" ReadingforDescriptor  {{0}}"<<std::endl;
-        //         FD_CLR(it->first, &this->_READ_fds);
-        //         close(it->first);
-        //         delete it->second;
-        //         this->_Clients.erase(it->first);
-        //         //throw Server::Excp("There was a connection issue");
-        //         std::cout<<"There client disconnected fd=[ "<< it->first<<" ]" <<std::endl;
-        //         it--;
-        //     }
-        //     else
-        //     {
-        //         std::cout<<"!!!!!!!!!2222222\n";
-        //         it->second->setBuffer(buffer, sizeBuff);
-        //     }
-        // }
+            if (sizeBuff == -1)
+            {
+                std::cout<<" ReadingforDescriptor  {{-1}}"<<std::endl;
+                FD_CLR(it->first, &this->_READ_fds);
+                close(it->first);
+                delete it->second;
+                this->_Clients.erase(it->first);
+                //throw Server::Excp("There was a connection issue");
+                std::cout<<"ERROR:  There was a connection issue fd=[ "<< it->first<<" ]" <<std::endl;
+                it--;
+            }
+            else if (sizeBuff == 0)
+            {
+                std::cout<<" ReadingforDescriptor  {{0}}"<<std::endl;
+                FD_CLR(it->first, &this->_READ_fds);
+                close(it->first);
+                delete it->second;
+                this->_Clients.erase(it->first);
+                //throw Server::Excp("There was a connection issue");
+                std::cout<<"There client disconnected fd=[ "<< it->first<<" ]" <<std::endl;
+                it--;
+            }
+            else
+            {
+                std::cout<<"!!!!!!!!!2222222\n";
+                it->second->setBuffer(buffer, sizeBuff);
+            }
+        }
         // else if (FD_ISSET(it->first, &_ER_fds))
         // {
         //     // FD_CLR(it->first, &this->_READ_fds);
