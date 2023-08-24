@@ -20,7 +20,6 @@ const char  *Server::Excp::what() const throw()
     return _s;
 }
 
-
 void Server::Chack(void)
 {
     if (!_port)
