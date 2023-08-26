@@ -11,7 +11,7 @@ class Client
         Client();
         Client(int fd, struct sockaddr_in client_addr);
         void setBuffer(const char *s, int len);
-        char const *getBuffer(void);
+        std::string getBuffer(void) const;
     private:
         int _fd;
         std::string _s;

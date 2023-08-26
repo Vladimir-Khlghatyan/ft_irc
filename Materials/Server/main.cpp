@@ -4,18 +4,23 @@ int main(int argc, char *argv[])
 {
     if (argc != 3)
     {
-        std::cout<<"must by enter three arguments"<<std::endl;
+        std::cout << "usage: ./ft_irc [port] [password]" << std::endl;
         return 1;
     }
+
+    if (!argsAreValid(argv[1], argv[2]))
+    {
+        std::cout << "test" << std::endl;
+        return 2;
+    }
+
     try{
         Server s(argv[1], argv[2]);
-        s.Chack();
-        std::cout<<"congratulations server is up and running"<<std::endl;
-        s.mainServer();
+        s.start();
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << e.what() << std::endl; // std::flush;
     }
     return 0;
 }
