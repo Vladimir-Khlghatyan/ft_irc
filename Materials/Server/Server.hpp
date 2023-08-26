@@ -27,6 +27,7 @@ class Server
         void ReadingforDescriptor(void);
         void mainServer(void);
         void closeFreeALL(void);
+        void managClient(std::map<int, Client*>::iterator it);
         class Excp : public std::exception
 		{
 			public:

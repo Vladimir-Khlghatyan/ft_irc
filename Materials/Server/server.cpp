@@ -147,7 +147,7 @@ void    Server::ReadingforDescriptor(void)
     std::map<int, Client*>::iterator it = this->_Clients.begin();
     it++;                                                           //[0]index input _server_fd
     int sizeBuff = 0;
-    char buffer[4096] = {0};
+    char buffer[1024] = {0};
 
     for( ;it != this->_Clients.end(); it++)
     {
@@ -171,9 +171,13 @@ void    Server::ReadingforDescriptor(void)
             }
             else
             {
+                // we need a parsing string geved                                  --------------------!!!!!!!!!
+                //:Name COMMAND parameter list
                 
+                
+                std::cout<< "["<<it->first<<"]"<<buffer<<std::endl;
                 it->second->setBuffer(buffer, sizeBuff);
-
+                // this->managClient(it);
             }
         }
         if (FD_ISSET(it->first, &_ER_fds))
@@ -185,6 +189,14 @@ void    Server::ReadingforDescriptor(void)
             std::cout<<" +++++++++++++++++++++++++&_WR_fds))"<<std::endl;
         }
     }
+}
+
+//-------------------------------------------------      Manag Client   ---------------------
+
+void Server::managClient(std::map<int, Client*>::iterator it)
+{
+    const char *str = "hello client\n\r";
+    send(it->first, str, strlen(str), 0);
 }
 
 //--------------------------------------------------      close Free ALL --------------------

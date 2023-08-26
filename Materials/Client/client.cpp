@@ -10,12 +10,11 @@ Client::Client(int fd, struct sockaddr_in client_addr)
     this->_client_addr = client_addr;
 }
 
-void Client::setBuffer(char *s, int len)
+void Client::setBuffer(const char *s, int len)
 {
-    for(int i = 0; i < len; i++)
-    {
-        _s[i] = s[i];
-    }
+    std::string a(s, len);
+
+    this->_s = a;
 }
 
 char const *Client::getBuffer(void)
