@@ -201,6 +201,7 @@ void Server::closeFreeALL(void)
     _Clients.clear();
 }
 
+
 //---------------------------------------------------       Server Main  -------------------
 
 
@@ -209,7 +210,7 @@ void    Server::start(void)
     this->initValueStruct();
 
     this->bindListnServer();
-    this->_Clients.insert(std::make_pair(_server_fd, NULL));
+    this->_Clients.insert(std::pair<int, Client*>(_server_fd, NULL));
     _max_fd = _server_fd + 1;
     std::cout << "Server listening on port "<< _port << std::endl;
 
