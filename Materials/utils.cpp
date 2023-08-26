@@ -1,21 +1,22 @@
+#include <iostream>
 #include <string>
 #include <cctype>
 
 bool argsAreValid(std::string port, std::string password)
 {
-    if (_password.empty() || _password.length() < 8)
+    if (password.empty() || password.length() < 8)
     {
         std::cout << "Error: password must contain at least 8 symbols!" << std::endl;
         return false;
     }
     
-    if (port.empty()
+    if (port.empty())
     {
         std::cout << "Error: empty port!" << std::endl;
         return false;
     }
 
-    for (int i = 0; i < port.size(); ++i)
+    for (size_t i = 0; i < port.size(); ++i)
     {
         if (!std::isdigit(port[i]))
         {
