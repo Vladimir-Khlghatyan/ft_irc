@@ -2,11 +2,8 @@
 
 Server::Server(const char *port, const char *password)
 {
-    if (port && *port && password && *password)
-    {
-        this->_port = std::atoi(port);
-        this->_password = password;
-    }
+    this->_port = std::atoi(port);//0012
+    this->_password = password;
 }
 
 //-------------------------------       Excp::Excp        ----------------------
@@ -20,15 +17,7 @@ const char  *Server::Excp::what() const throw()
     return _s;
 }
 
-void Server::Chack(void)
-{
-    if (!_port)
-        throw Server::Excp("three arguments must be entered, which are once digits");
-    if (_port <= 0 || _port > 65535)
-        throw Server::Excp("port must be entered in 0 two 65535");
-    if (_password.empty() || _password.length() > 8)
-        throw Server::Excp("password must be entered 8 digits");
-}
+
 void    Server::initValueStruct(void)
 {
     // Forcefully attaching socket to the port for input
@@ -38,7 +27,7 @@ void    Server::initValueStruct(void)
     _server_addr.sin_port = htons(_port); // Port number
     _server_addr.sin_addr.s_addr = INADDR_ANY;// Accept connections from any IP address
 
-    _is_Exit = 0;
+    _is_Exit = false;
 }
 
 
@@ -102,7 +91,7 @@ void    Server::ClientConnect(void)
     }
     else if (_ready_FD == 0)
     {
-        std::cout<< "No activity within 2 seconds.\n" << std::endl;
+        std::cout<< "No activity within 2 seconds." << std::endl;
     }
     else
     {
@@ -110,14 +99,13 @@ void    Server::ClientConnect(void)
         struct sockaddr_in client_addr;
         client_addr.sin_family = AF_INET;
         client_addr.sin_port = htons(_port);
-        _len = sizeof(client_addr);
+        socklen_t len = sizeof(client_addr);
 
         // Check if the listening socket is ready
         if (FD_ISSET(_server_fd, &_READ_fds))
         {
-            _client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &_len);
+            _client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &len);
 
-            fcntl(_client_fd, F_SETFL, O_NONBLOCK);
             // verify that the file descriptor conforms to the standard list
             if (_client_fd == -1)
             {
@@ -126,11 +114,12 @@ void    Server::ClientConnect(void)
             }
             else if (_client_fd)
             {
-                printf("New connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-
+                fcntl(_client_fd, F_SETFL, O_NONBLOCK);
+                std::cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << std::endl;
+ 
                 // Add the new client_fd to the set
                 Client *new_Client = new Client(_client_fd, client_addr);
-                this->_Clients.insert(std::pair<int, Client*>(_client_fd, new_Client));
+                this->_Clients.insert(std::make_pair(_client_fd, new_Client));
             }
         }
     }
@@ -144,12 +133,11 @@ void    Server::ClientConnect(void)
 
 void    Server::ReadingforDescriptor(void)
 {
-    std::map<int, Client*>::iterator it = this->_Clients.begin();
-    it++;                                                           //[0]index input _server_fd
+    std::map<int, Client*>::iterator it = ++this->_Clients.begin(); //[0]index input _server_fd
     int sizeBuff = 0;
     char buffer[1024] = {0};
 
-    for( ;it != this->_Clients.end(); it++)
+    for( ;it != this->_Clients.end(); ++it) 
     {
         if (FD_ISSET(it->first, &_READ_fds))
         {
@@ -165,9 +153,9 @@ void    Server::ReadingforDescriptor(void)
                 FD_CLR(it->first, &this->_READ_fds);
                 close(it->first);
                 delete it->second;
-                this->_Clients.erase(it->first);
-                std::cout<<"There client disconnected fd=[ "<< it->first<<" ]" <<std::endl;
-                it--;
+                this->_Clients.erase(it);
+                std::cout << "The client is disconnected (fd = " << it->first<< ")." << std::endl;
+                --it;
             }
             else
             {
@@ -216,12 +204,12 @@ void Server::closeFreeALL(void)
 //---------------------------------------------------       Server Main  -------------------
 
 
-void    Server::mainServer(void)
+void    Server::start(void)
 {
     this->initValueStruct();
 
     this->bindListnServer();
-    this->_Clients.insert(std::pair<int, Client*>(_server_fd, NULL));
+    this->_Clients.insert(std::make_pair(_server_fd, NULL));
     _max_fd = _server_fd + 1;
     std::cout << "Server listening on port "<< _port << std::endl;
 

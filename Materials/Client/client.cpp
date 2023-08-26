@@ -17,7 +17,7 @@ void Client::setBuffer(const char *s, int len)
     this->_s = a;
 }
 
-char const *Client::getBuffer(void)
+std::string Client::getBuffer(void) const
 {
-    return _s.c_str();
+    return _s;
 }

@@ -20,12 +20,11 @@ class Server
 {
     public:
         Server(const char *port, const char *password);
-        void Chack(void);
         void initValueStruct(void);
         void bindListnServer(void);
         void ClientConnect(void);
         void ReadingforDescriptor(void);
-        void mainServer(void);
+        void start(void);
         void closeFreeALL(void);
         void managClient(std::map<int, Client*>::iterator it);
         class Excp : public std::exception
@@ -38,7 +37,6 @@ class Server
 		};
     private:
         struct sockaddr_in _server_addr;
-        socklen_t _len;
         std::string _password;
         int _port, _max_fd;
         int _server_fd, _client_fd;
@@ -50,6 +48,6 @@ class Server
 
 };
 
-
+bool argsAreValid(std::string port, std::string password);
 
 #endif
