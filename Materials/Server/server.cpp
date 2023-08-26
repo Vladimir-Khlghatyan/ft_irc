@@ -20,7 +20,6 @@ const char  *Server::Excp::what() const throw()
     return _s;
 }
 
-
 void Server::Chack(void)
 {
     if (!_port)
@@ -81,6 +80,8 @@ void    Server::ClientConnect(void)
 
     _timeout.tv_sec = 2;     //time wait
     _timeout.tv_usec = 0;
+
+
     FD_SET(_server_fd, &_WR_fds);
     std::map<int, Client*>::iterator it = this->_Clients.begin();
     for( ;it != this->_Clients.end(); it++)
@@ -90,13 +91,13 @@ void    Server::ClientConnect(void)
         FD_SET(it->first, &_ER_fds);
     }
     _max_fd = (--it)->first + 1;
+
     _ready_FD = select(_max_fd, &_READ_fds, &_WR_fds, &_ER_fds, &_timeout);
 
     //ready for the specified events
     if (_ready_FD == -1)
     {
-        close(_server_fd);
-       //all  close(_client_fd);
+       this->closeFreeALL();
        throw Server::Excp("select all error");
     }
     else if (_ready_FD == 0)
@@ -110,7 +111,7 @@ void    Server::ClientConnect(void)
         client_addr.sin_family = AF_INET;
         client_addr.sin_port = htons(_port);
         _len = sizeof(client_addr);
-        
+
         // Check if the listening socket is ready
         if (FD_ISSET(_server_fd, &_READ_fds))
         {
@@ -128,7 +129,7 @@ void    Server::ClientConnect(void)
                 printf("New connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
                 // Add the new client_fd to the set
-                Client *new_Client = new Client(_client_fd);
+                Client *new_Client = new Client(_client_fd, client_addr);
                 this->_Clients.insert(std::pair<int, Client*>(_client_fd, new_Client));
             }
         }
@@ -146,7 +147,7 @@ void    Server::ReadingforDescriptor(void)
     std::map<int, Client*>::iterator it = this->_Clients.begin();
     it++;                                                           //[0]index input _server_fd
     int sizeBuff = 0;
-    char buffer[4096] = {0};
+    char buffer[1024] = {0};
 
     for( ;it != this->_Clients.end(); it++)
     {
@@ -156,12 +157,8 @@ void    Server::ReadingforDescriptor(void)
 
             if (sizeBuff == -1)
             {
-                FD_CLR(it->first, &this->_READ_fds);
-                close(it->first);
-                delete it->second;
-                this->_Clients.erase(it->first);
+                this->closeFreeALL();
                 throw Server::Excp("ERROR: There was a connection issue");
-                it--;
             }
             else if (sizeBuff == 0)
             {
@@ -174,23 +171,49 @@ void    Server::ReadingforDescriptor(void)
             }
             else
             {
+                // we need a parsing string geved                                  --------------------!!!!!!!!!
+                //:Name COMMAND parameter list
+                
+                
+                std::cout<< "["<<it->first<<"]"<<buffer<<std::endl;
                 it->second->setBuffer(buffer, sizeBuff);
+                // this->managClient(it);
             }
         }
         if (FD_ISSET(it->first, &_ER_fds))
         {
-            std::cout<<" &_ER_fds)) "<<std::endl;
+            std::cout<<" -------------------------&_ER_fds)) "<<std::endl;
         }
         if (FD_ISSET(it->first, &_WR_fds))
         {
-            std::cout<<" &_WR_fds))"<<std::endl;
+            std::cout<<" +++++++++++++++++++++++++&_WR_fds))"<<std::endl;
         }
     }
 }
 
+//-------------------------------------------------      Manag Client   ---------------------
+
+void Server::managClient(std::map<int, Client*>::iterator it)
+{
+    const char *str = "hello client\n\r";
+    send(it->first, str, strlen(str), 0);
+}
+
+//--------------------------------------------------      close Free ALL --------------------
+
+void Server::closeFreeALL(void)
+{
+    std::map<int, Client*>::iterator it = _Clients.begin();
+    for( ; it != _Clients.end(); it++)
+    {
+        close(it->first);
+        if (it->second)
+            delete it->second;
+    }
+    _Clients.clear();
+}
 
 //---------------------------------------------------       Server Main  -------------------
-
 
 
 void    Server::mainServer(void)
