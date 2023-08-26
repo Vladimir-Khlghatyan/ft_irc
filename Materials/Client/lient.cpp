@@ -21,3 +21,6 @@ std::string Client::getBuffer(void) const
 {
     return _s;
 }
+
+
+

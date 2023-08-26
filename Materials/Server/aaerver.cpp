@@ -201,7 +201,6 @@ void Server::closeFreeALL(void)
     _Clients.clear();
 }
 
-
 //---------------------------------------------------       Server Main  -------------------
 
 
@@ -221,3 +220,4 @@ void    Server::start(void)
     }
     std::cout<<"END :Server stopped"<<std::endl;
 }
+
