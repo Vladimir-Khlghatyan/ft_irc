@@ -23,4 +23,3 @@ std::string Client::getBuffer(void) const
 }
 
 
-
