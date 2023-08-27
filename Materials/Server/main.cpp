@@ -8,9 +8,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (!argsAreValid(argv[1], argv[2]))
+    if (!argsAreValid(argv[1], argv[2])) // test
     {
-        std::cout << "test" << std::endl;
         return 2;
     }
 
