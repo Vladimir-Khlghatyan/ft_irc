@@ -2,12 +2,11 @@
 
 Server::Server(const char *port, const char *password)
 {
-    this->_port = std::atoi(port);//0012
+    this->_port = std::atoi(port);
     this->_password = password;
 }
 
 //-------------------------------       Excp::Excp        ----------------------
-
 
 Server::Excp::Excp(const char *s)
 {
@@ -18,61 +17,64 @@ const char  *Server::Excp::what() const throw()
 {
     return _s;
 }
-
+//------------------------------------------------------------------------------
 
 void    Server::initValueStruct(void)
 {
-    // Forcefully attaching socket to the port for input
-    // Ստիպողաբար միացնելով վարդակը  պորտին
     // Set up server address
-    _server_addr.sin_family = AF_INET;// This is a macro representing the address family, specifically IPv4
-    _server_addr.sin_port = htons(_port); // Port number
-    _server_addr.sin_addr.s_addr = INADDR_ANY;// Accept connections from any IP address
-
-    _is_Exit = false;
+    _server_addr.sin_family = AF_INET;              // This is a macro representing the address family, specifically IPv4
+    _server_addr.sin_port = htons(_port);           // Convert port to network byte order
+    _server_addr.sin_addr.s_addr = INADDR_ANY;      // Accept connections from any IP address
 }
-
 
 //-------------------------------------------      Server  Bind    ---------------
 
-
 void    Server::bindListnServer(void)
 {
-    int opt = 1;
+    // Create socket
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_server_fd == -1)
-        throw Server::Excp("server socket not created");
+        throw Server::Excp("Error: socket creation failed!");
 
-    // reused port for restart now
-    setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    // Set address reuse option:
+    // (enabling the reuse of local addresses (SO_REUSEADDR) for the socket)
+    // (allowing the server to quickly restart (opt = 1))
+    int opt = 1;
+    if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+    {
+        close(_server_fd);
+        throw Server::Excp("Error: setting socket options failed!");
+    }
 
-    // "0.0.0.0" represents an IPv4 address 
-    // when you want to bind a socket to all available
-    //  network interfaces on the machine
-    // inet_pton(AF_INET, "0.0.0.0", &_client_addr.sin_addr);
-
+    // Bind the socket to an address and port, stored in the _server_addr structure.
     if (bind(_server_fd, (struct sockaddr*)&_server_addr, sizeof(_server_addr)) == -1)
     {
         close(_server_fd);
-        throw Server::Excp("server can not bind");
+        throw Server::Excp("Error: server binding failed!");
     }
     
     // Listen for incoming connections
     if (listen(_server_fd , SOMAXCONN) == -1)
     {
         close(_server_fd);
-        throw Server::Excp("server can not listening");
+        throw Server::Excp("Error: server listening failed!");
     }
-    fcntl(_server_fd, F_SETFL, O_NONBLOCK);
+
+    // Set non-blocking mode
+    if (fcntl(_server_fd, F_SETFL, O_NONBLOCK) == -1)
+    {
+        close(_server_fd);
+        throw Server::Excp("Error: setting socket to non-blocking mode failed!");
+    }
 }
 
 void    Server::ClientConnect(void)
 {
-    FD_ZERO(&_READ_fds);      //clear fd is set 
+    FD_ZERO(&_READ_fds);    //clear fd is set 
     FD_ZERO(&_WR_fds);      //clear fd is set
     FD_ZERO(&_ER_fds);      //clear fd is set
 
-    _timeout.tv_sec = 2;     //time wait
+    _timeout.tv_sec = 2;     // waiting time (2 sec.)
     _timeout.tv_usec = 0;
 
 

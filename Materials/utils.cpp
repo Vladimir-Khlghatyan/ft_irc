@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cctype>
+#include <stdlib.h>
 
 bool argsAreValid(std::string port, std::string password)
 {

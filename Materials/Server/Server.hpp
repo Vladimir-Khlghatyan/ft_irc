@@ -18,6 +18,7 @@
 #include <utility> // for make_pair
 // #include <netdb.h> // for f
 #include <netinet/in.h>
+#include <stdlib.h>
 
 class Server
 {
@@ -40,16 +41,19 @@ class Server
 				char *_s;
 		};
     private:
-        struct sockaddr_in _server_addr;
-        std::string _password;
-        int _port, _max_fd;
-        int _server_fd, _client_fd;
-        struct timeval _timeout;
-        bool _is_Exit;
-        fd_set _WR_fds, _READ_fds, _ER_fds;
-        int _ready_FD;
-        std::map<int, Client*> _Clients;
-        Command _command;
+        struct sockaddr_in      _server_addr;
+        std::string             _password;
+        unsigned short          _port;
+        int                     _max_fd;
+        int                     _server_fd;
+        int                     _client_fd;
+        int                     _ready_FD;
+        struct timeval          _timeout;
+        fd_set                  _WR_fds;
+        fd_set                  _READ_fds;
+        fd_set                  _ER_fds;
+        std::map<int, Client*>  _Clients;
+        Command                 _command;
 };
 
 bool argsAreValid(std::string port, std::string password);
