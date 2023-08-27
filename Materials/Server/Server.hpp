@@ -2,11 +2,13 @@
 # define SERVER_HPP
 
 #include "../Client/Client.hpp"
+#include "../Command/Command.hpp"
 #include <iostream>
 #include <iterator>
 #include <arpa/inet.h> // Add this header for 'inet_addr'
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sstream>
 #include <exception>
 #include <string.h>
 #include <cstring>
@@ -28,6 +30,7 @@ class Server
         void start(void);
         void closeFreeALL(void);
         void managClient(std::map<int, Client*>::iterator it);
+        bool verifyingRegistered(int fdClient);
         class Excp : public std::exception
 		{
 			public:
@@ -46,7 +49,7 @@ class Server
         fd_set _WR_fds, _READ_fds, _ER_fds;
         int _ready_FD;
         std::map<int, Client*> _Clients;
-
+        Command _command;
 };
 
 bool argsAreValid(std::string port, std::string password);

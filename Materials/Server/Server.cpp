@@ -7,6 +7,8 @@ Server::Server(const char *port, const char *password)
 }
 
 //-------------------------------       Excp::Excp        ----------------------
+
+
 Server::Excp::Excp(const char *s)
 {
     this->_s = const_cast<char*>(s);
@@ -114,28 +116,27 @@ void    Server::ClientConnect(void)
             }
             else if (_client_fd)
             {
-                fcntl(_client_fd, F_SETFL, O_NONBLOCK);
+                // fcntl(_client_fd, F_SETFL, O_NONBLOCK);
                 std::cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << std::endl;
- 
-                // Add the new client_fd to the set
-                Client *new_Client = new Client(_client_fd, client_addr);
-                this->_Clients.insert(std::make_pair(_client_fd, new_Client));
+
+                if (this->verifyingRegistered(_client_fd))
+                {
+                    // Add the new client_fd to the set
+                    Client *new_Client = new Client(_client_fd, client_addr);
+                    this->_Clients.insert(std::make_pair(_client_fd, new_Client));
+                }
             }
         }
     }
 }
 
-
-
 //------------------------------------------------------    iterator for Map   ------------------
-
-
 
 void    Server::ReadingforDescriptor(void)
 {
     std::map<int, Client*>::iterator it = ++this->_Clients.begin(); //[0]index input _server_fd
     int sizeBuff = 0;
-    char buffer[1024] = {0};
+    char buffer[1025] = {0};
 
     for( ;it != this->_Clients.end(); ++it) 
     {
@@ -161,9 +162,8 @@ void    Server::ReadingforDescriptor(void)
             {
                 // we need a parsing string geved                                  --------------------!!!!!!!!!
                 //:Name COMMAND parameter list
-                
-                
                 std::cout<< "["<<it->first<<"]"<<buffer<<std::endl;
+
                 it->second->setBuffer(buffer, sizeBuff);
                 // this->managClient(it);
             }
@@ -177,6 +177,40 @@ void    Server::ReadingforDescriptor(void)
             std::cout<<" +++++++++++++++++++++++++&_WR_fds))"<<std::endl;
         }
     }
+}
+
+//------------------------------------------------    VerifyingRegisteredt -------------------
+
+bool Server::verifyingRegistered(int fdClient)
+{
+    int sizeBuff;
+    char buffer[1025];
+    int countCheck = -1;
+    std::stringstream stream;
+    std::string p;
+
+// fcntl(_server_fd, F_SETFL, O_NONBLOCK);
+    while (++countCheck < 3)
+    {
+        sizeBuff = recv(fdClient, buffer, sizeof(buffer), 0);
+
+        int i = -1;
+        while(++i < sizeBuff)
+            p += buffer[i];
+
+ std::cout << "line" << __LINE__ << std::endl;
+
+        if (!_command.PASS(sizeBuff, p))
+        {
+            std::cout << "incorrect password" << std::endl;
+            continue;
+        }
+        return true;
+    }
+std::cout << "line" << __LINE__ << std::endl;
+
+
+    return false;
 }
 
 //-------------------------------------------------      Manag Client   ---------------------
@@ -207,6 +241,7 @@ void Server::closeFreeALL(void)
 
 void    Server::start(void)
 {
+    _command.setPass(_password);
     this->initValueStruct();
 
     this->bindListnServer();
