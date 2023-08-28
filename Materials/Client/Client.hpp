@@ -17,7 +17,7 @@ class Client
         std::string _s;
         std::string _port;
         struct sockaddr_in _client_addr;
-        std::string pass;//Command: PASS   Parameters: <password>
+        std::string pass; //Command: PASS   Parameters: <password>
         std::string nick;
         std::string user;
 };
