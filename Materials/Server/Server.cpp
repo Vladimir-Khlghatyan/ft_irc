@@ -132,6 +132,7 @@ void    Server::ClientConnect(void)
                 {
                     // Add the new client_fd to the set
                     _Clients[client_fd] = new Client(client_fd, client_addr);
+                    // այստեղ անհրաժեշտ է թարմացնել նաև _nickname անդամ փոփոխականը;
                 }
             }
         }
@@ -260,4 +261,15 @@ void    Server::start(void)
         this->ReadingforDescriptor();
     }
     std::cout << "END :Server stopped" << std::endl;
+}
+
+//------------------------------------------------------------------------------
+
+Client* Server::getClient(const std::string& nickname)
+{
+    std::map<std::string, int>::iterator it = _nickname.find(nickname);
+    if (it == _nickname.end())
+        return NULL;
+
+    return _Clients.find(it->second)->second;
 }

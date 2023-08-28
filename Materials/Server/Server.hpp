@@ -32,6 +32,9 @@ class Server
         void closeFreeALL(void);
         void managClient(std::map<int, Client*>::iterator it);
         bool registeration(int fdClient);
+
+        Client* getClient(const std::string& nickname);
+
         class Excp : public std::exception
 		{
 			public:
@@ -40,19 +43,21 @@ class Server
 			private:
 				char *_s;
 		};
+
     private:
-        struct sockaddr_in      _server_addr;
-        std::string             _password;
-        unsigned short          _port;
-        int                     _max_fd;
-        int                     _server_fd;
-        int                     _ready_FD;
-        struct timeval          _timeout;
-        fd_set                  _WR_fds;
-        fd_set                  _READ_fds;
-        fd_set                  _ER_fds;
-        std::map<int, Client*>  _Clients;
-        Command                 _command;
+        struct sockaddr_in          _server_addr;
+        std::string                 _password;
+        unsigned short              _port;
+        int                         _max_fd;
+        int                         _server_fd;
+        int                         _ready_FD;
+        struct timeval              _timeout;
+        fd_set                      _WR_fds;
+        fd_set                      _READ_fds;
+        fd_set                      _ER_fds;
+        std::map<int, Client*>      _Clients;   // fd : client
+        std::map<std::string, int>  _nickname;  // nick : fd
+        Command                     _command;
 };
 
 bool argsAreValid(std::string port, std::string password);
