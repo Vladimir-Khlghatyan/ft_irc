@@ -70,31 +70,31 @@ void    Server::bindListnServer(void)
 
 void    Server::ClientConnect(void)
 {
-    FD_ZERO(&_READ_fds);    //clear fd is set 
-    FD_ZERO(&_WR_fds);      //clear fd is set
-    FD_ZERO(&_ER_fds);      //clear fd is set
+    FD_ZERO(&_READ_fds);    // initializing a descriptor set _READ_fds to the null set
+    FD_ZERO(&_WR_fds);      // initializing a descriptor set _WR_fds to the null set
+    FD_ZERO(&_ER_fds);      // initializing a descriptor set _ER_fds to the null set
 
-    _timeout.tv_sec = 2;     // waiting time (2 sec.)
+    _timeout.tv_sec = 2;    // waiting time (2 sec.)
     _timeout.tv_usec = 0;
 
+    FD_SET(_server_fd, &_WR_fds); // adding the file descriptor _server_fd to the _WR_fds set.
 
-    FD_SET(_server_fd, &_WR_fds);
     std::map<int, Client*>::iterator it = this->_Clients.begin();
-    for( ;it != this->_Clients.end(); it++)
+    for(; it != _Clients.end(); ++it)
     {
         FD_SET(it->first, &_READ_fds);
-        // FD_SET(it->first, &_WR_fds); //because clients can always write
+        // FD_SET(it->first, &_WR_fds); // because clients can always write
         FD_SET(it->first, &_ER_fds);
     }
-    _max_fd = (--it)->first + 1;
+    _max_fd = _Clients.rbegin()->first + 1;
 
     _ready_FD = select(_max_fd, &_READ_fds, &_WR_fds, &_ER_fds, &_timeout);
 
-    //ready for the specified events
+    // ready for the specified events
     if (_ready_FD == -1)
     {
        this->closeFreeALL();
-       throw Server::Excp("select all error");
+       throw Server::Excp("Error occurred during 'select' operation");
     }
     else if (_ready_FD == 0)
     {
@@ -117,7 +117,7 @@ void    Server::ClientConnect(void)
             if (_client_fd == -1)
             {
                 close(_server_fd);
-                throw Server::Excp("Error :Server can not accept Client");
+                throw Server::Excp("Error: Server can not accept the client");
             }
             else if (_client_fd)
             {
@@ -127,8 +127,7 @@ void    Server::ClientConnect(void)
                 if (this->verifyingRegistered(_client_fd))
                 {
                     // Add the new client_fd to the set
-                    Client *new_Client = new Client(_client_fd, client_addr);
-                    this->_Clients.insert(std::make_pair(_client_fd, new_Client));
+                    _Clients[_client_fd] = new Client(_client_fd, client_addr);
                 }
             }
         }
@@ -139,9 +138,9 @@ void    Server::ClientConnect(void)
 
 void    Server::ReadingforDescriptor(void)
 {
-    std::map<int, Client*>::iterator it = ++this->_Clients.begin(); //[0]index input _server_fd
+    std::map<int, Client*>::iterator it = ++this->_Clients.begin(); // [0]index input _server_fd
     int sizeBuff = 0;
-    char buffer[1025] = {0};
+    char buffer[1024] = {0};
 
     for( ;it != this->_Clients.end(); ++it) 
     {
@@ -167,7 +166,7 @@ void    Server::ReadingforDescriptor(void)
             {
                 // we need a parsing string geved                                  --------------------!!!!!!!!!
                 //:Name COMMAND parameter list
-                std::cout<< "["<<it->first<<"]"<<buffer<<std::endl;
+                std::cout<< "[" << it->first <<"]" << buffer << std::endl;
 
                 it->second->setBuffer(buffer, sizeBuff);
                 // this->managClient(it);
@@ -231,7 +230,7 @@ void Server::managClient(std::map<int, Client*>::iterator it)
 void Server::closeFreeALL(void)
 {
     std::map<int, Client*>::iterator it = _Clients.begin();
-    for( ; it != _Clients.end(); it++)
+    for( ; it != _Clients.end(); ++it)
     {
         close(it->first);
         if (it->second)
@@ -241,7 +240,7 @@ void Server::closeFreeALL(void)
 }
 
 
-//---------------------------------------------------       Server Main  -------------------
+//---------------------------------------------------       Server start  -------------------
 
 
 void    Server::start(void)
@@ -259,6 +258,6 @@ void    Server::start(void)
         this->ClientConnect();
         this->ReadingforDescriptor();
     }
-    std::cout<<"END :Server stopped"<<std::endl;
+    std::cout << "END :Server stopped" << std::endl;
 }
 
