@@ -128,12 +128,8 @@ void    Server::ClientConnect(void)
 
                 std::cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << std::endl;
 
-                if (this->registeration(client_fd))
-                {
-                    // Add the new client_fd to the set
-                    _Clients[client_fd] = new Client(client_fd, client_addr);
-                    // այստեղ անհրաժեշտ է թարմացնել նաև _nickname անդամ փոփոխականը;
-                }
+                _Clients[client_fd] = new Client(client_fd, client_addr);
+
             }
         }
     }
@@ -145,7 +141,7 @@ void    Server::ReadingforDescriptor(void)
 {
     std::map<int, Client*>::iterator it = ++this->_Clients.begin(); // [0]index input _server_fd
     int sizeBuff = 0;
-    char buffer[1024] = {0};
+    char buffer[1025] = {0};
 
     for( ;it != this->_Clients.end(); ++it) 
     {
@@ -172,8 +168,13 @@ void    Server::ReadingforDescriptor(void)
                 // we need a parsing string geved                                  --------------------!!!!!!!!!
                 //:Name COMMAND parameter list
                 std::cout<< "[" << it->first <<"]" << buffer << std::endl;
-
                 it->second->setBuffer(buffer, sizeBuff);
+                if (this->registeration(it->first))
+                {
+                    it->second->setRegistered(true);
+                    // Add the new client_fd to the set
+                    // այստեղ անհրաժեշտ է թարմացնել նաև _nickname անդամ փոփոխականը;
+                }
                 // this->managClient(it);
             }
         }
@@ -192,30 +193,25 @@ void    Server::ReadingforDescriptor(void)
 
 bool Server::registeration(int fdClient)
 {
-    int sizeBuff;
-    char buffer[1025];
-    int countCheck = -1;
-    // std::stringstream stream;
-    std::string pass;
-
-    while (++countCheck < 3)
-    {
-        sizeBuff = recv(fdClient, buffer, sizeof(buffer), 0);
-
-        int i = -1;
-        while(++i < sizeBuff)
-            pass += buffer[i];
-
-        std::cout << "line" << __LINE__ << std::endl; // error logger
-
-        if (!_command.PASS(sizeBuff, pass))
-        {
-            std::cout << "incorrect password" << std::endl;
-            continue;
-        }
+    if (_Clients[fdClient]->getRegistered())
         return true;
-    }
+    else
+         _Clients[fdClient]->countPassPlus();
 
+    if (_Clients[fdClient]->countPass() > 3)
+    {
+        FD_CLR(fdClient, &this->_READ_fds);
+        close(fdClient);
+        delete _Clients[fdClient];
+        this->_Clients.erase(fdClient);
+        return false;
+    }
+    std::cout << "line" << __LINE__ << std::endl; // error logger
+    if (_Clients[fdClient]->getArguments() == 0 && !_command.PASS(_Clients[fdClient]))
+    {
+        std::cout << "incorrect password" << std::endl;
+        return false;
+    }
     std::cout << "line" << __LINE__ << std::endl; // error logger
     
     return false;
