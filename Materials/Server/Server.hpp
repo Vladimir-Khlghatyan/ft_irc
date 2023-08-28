@@ -31,7 +31,7 @@ class Server
         void start(void);
         void closeFreeALL(void);
         void managClient(std::map<int, Client*>::iterator it);
-        bool verifyingRegistered(int fdClient);
+        bool registeration(int fdClient);
         class Excp : public std::exception
 		{
 			public:
@@ -46,7 +46,6 @@ class Server
         unsigned short          _port;
         int                     _max_fd;
         int                     _server_fd;
-        int                     _client_fd;
         int                     _ready_FD;
         struct timeval          _timeout;
         fd_set                  _WR_fds;

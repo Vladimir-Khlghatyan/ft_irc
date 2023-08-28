@@ -102,7 +102,6 @@ void    Server::ClientConnect(void)
     }
     else
     {
-        _client_fd = 0;
         struct sockaddr_in client_addr;
         client_addr.sin_family = AF_INET;
         client_addr.sin_port = htons(_port);
@@ -111,23 +110,28 @@ void    Server::ClientConnect(void)
         // Check if the listening socket is ready
         if (FD_ISSET(_server_fd, &_READ_fds))
         {
-            _client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &len);
+            int client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &len);
 
             // verify that the file descriptor conforms to the standard list
-            if (_client_fd == -1)
+            if (client_fd == -1)
             {
                 close(_server_fd);
                 throw Server::Excp("Error: Server can not accept the client");
             }
-            else if (_client_fd)
+            else if (client_fd)
             {
-                // fcntl(_client_fd, F_SETFL, O_NONBLOCK);
+                // if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1)
+                // {
+                //     close(_server_fd);
+                //     throw Server::Excp("Error: setting client fd to non-blocking mode failed!");
+                // }
+
                 std::cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << std::endl;
 
-                if (this->verifyingRegistered(_client_fd))
+                if (this->registeration(client_fd))
                 {
                     // Add the new client_fd to the set
-                    _Clients[_client_fd] = new Client(_client_fd, client_addr);
+                    _Clients[client_fd] = new Client(client_fd, client_addr);
                 }
             }
         }
@@ -183,37 +187,36 @@ void    Server::ReadingforDescriptor(void)
     }
 }
 
-//------------------------------------------------    VerifyingRegisteredt -------------------
+//------------------------------------------------    registeration -------------------
 
-bool Server::verifyingRegistered(int fdClient)
+bool Server::registeration(int fdClient)
 {
     int sizeBuff;
     char buffer[1025];
     int countCheck = -1;
-    std::stringstream stream;
-    std::string p;
+    // std::stringstream stream;
+    std::string pass;
 
-// fcntl(_server_fd, F_SETFL, O_NONBLOCK);
     while (++countCheck < 3)
     {
         sizeBuff = recv(fdClient, buffer, sizeof(buffer), 0);
 
         int i = -1;
         while(++i < sizeBuff)
-            p += buffer[i];
+            pass += buffer[i];
 
- std::cout << "line" << __LINE__ << std::endl;
+        std::cout << "line" << __LINE__ << std::endl; // error logger
 
-        if (!_command.PASS(sizeBuff, p))
+        if (!_command.PASS(sizeBuff, pass))
         {
             std::cout << "incorrect password" << std::endl;
             continue;
         }
         return true;
     }
-std::cout << "line" << __LINE__ << std::endl;
 
-
+    std::cout << "line" << __LINE__ << std::endl; // error logger
+    
     return false;
 }
 
@@ -239,9 +242,7 @@ void Server::closeFreeALL(void)
     _Clients.clear();
 }
 
-
 //---------------------------------------------------       Server start  -------------------
-
 
 void    Server::start(void)
 {
@@ -253,11 +254,10 @@ void    Server::start(void)
     _max_fd = _server_fd + 1;
     std::cout << "Server listening on port "<< _port << std::endl;
 
-    for( ; ;)
+    for( ; ; )
     {
         this->ClientConnect();
         this->ReadingforDescriptor();
     }
     std::cout << "END :Server stopped" << std::endl;
 }
-
