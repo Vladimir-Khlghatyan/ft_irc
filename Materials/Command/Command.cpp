@@ -20,11 +20,14 @@ std::string Command::getPass(void)
     return _password;
 }
 
-bool Command::PASS(int size, std::string& s)
+bool Command::PASS(Client* C)
 {
-    if (s.substr(0,5) == "PASS " && s.substr(5, size - 5) == _password)
+    if (C->getLine().substr(0,5) == "PASS " && C->getLine().substr(5, C->sizeBuff() - 5) == _password)
+    {
+        
+        C->setArguments(true);
         return true;
-    if (s.substr(0, size) == _password)
-        return true;
+    }
+    std::cout<<"{"<<C->getLine().substr(5, C->sizeBuff() - 5)<<"}";
     return false ;
 }
