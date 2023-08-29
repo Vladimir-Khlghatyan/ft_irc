@@ -22,12 +22,12 @@ std::string Command::getPass(void)
 
 bool Command::PASS(Client* C)
 {
-    if (C->getLine().substr(0,5) == "PASS " && C->getLine().substr(5, C->sizeBuff() - 5) == _password)
-    {
-        
-        C->setArguments(true);
+    std::string fullPass = "PASS " + _password;
+    if (C->getInputBuffer() == fullPass)
+    {        
+        C->setRegistered(true);
         return true;
     }
-    std::cout<<"{"<<C->getLine().substr(5, C->sizeBuff() - 5)<<"}";
+    std::cout<<"{"<<C->getInputBuffer().substr(5, C->getSizeBuff() - 5)<<"}";
     return false ;
 }

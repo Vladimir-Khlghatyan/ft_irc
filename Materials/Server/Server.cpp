@@ -168,7 +168,7 @@ void    Server::ReadingforDescriptor(void)
                 // we need a parsing string geved                                  --------------------!!!!!!!!!
                 //:Name COMMAND parameter list
                 std::cout<< "[" << it->first <<"]" << buffer << std::endl;
-                it->second->setBuffer(buffer, sizeBuff);
+                it->second->setInputBuffer(buffer, sizeBuff);
                 if (this->registeration(it->first))
                 {
                     it->second->setRegistered(true);
@@ -193,12 +193,12 @@ void    Server::ReadingforDescriptor(void)
 
 bool Server::registeration(int fdClient)
 {
-    if (_Clients[fdClient]->getRegistered())
+    if (_Clients[fdClient]->isRegistered())
         return true;
-    else
-         _Clients[fdClient]->countPassPlus();
 
-    if (_Clients[fdClient]->countPass() > 3)
+    _Clients[fdClient]->incrementRegLevel();
+
+    if (_Clients[fdClient]->getPassTryCount() > 3)
     {
         FD_CLR(fdClient, &this->_READ_fds);
         close(fdClient);
@@ -206,8 +206,10 @@ bool Server::registeration(int fdClient)
         this->_Clients.erase(fdClient);
         return false;
     }
+
     std::cout << "line" << __LINE__ << std::endl; // error logger
-    if (_Clients[fdClient]->getArguments() == 0 && !_command.PASS(_Clients[fdClient]))
+
+    if (_Clients[fdClient]->getRegLevel() == 0 && !_command.PASS(_Clients[fdClient]))
     {
         std::cout << "incorrect password" << std::endl;
         return false;
