@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cstring>
 #include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
 
 class Client
 {
@@ -12,6 +14,7 @@ class Client
         Client(int fd, struct sockaddr_in client_addr);
 
         std::string getInputBuffer(void);
+        std::string getNick(void);
         int getPassTryCount(void);
         int getSizeBuff(void);
         int getRegLevel(void);
@@ -25,6 +28,9 @@ class Client
         void incrementPassTryCount(void);
         bool isRegistered(void);
 
+        std::string	getPrefix(void);
+        void reply(const std::string& reply);
+
     private:
         int _fd;
         std::string _inputBuffer;
@@ -33,8 +39,9 @@ class Client
         std::string _pass; // Command: PASS   Parameters: <password>
         std::string _nick; // Command: NICK   Parameters: <nikname>
         std::string _user;
+        std::string _hostname;
         std::string _command;
-        std::vector<std::string> 
+        
         bool        _registered;
         int         _passTryCount; // max 3
         int         _regLevel; // registration level must be 3 (password, nickname and username)

@@ -20,10 +20,13 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 
+class Command;
+
 class Server
 {
     public:
         Server(const char *port, const char *password);
+        ~Server(void);
         void initValueStruct(void);
         void bindListnServer(void);
         void ClientConnect(void);
@@ -33,6 +36,7 @@ class Server
         void managClient(std::map<int, Client*>::iterator it);
         bool registeration(int fdClient);
 
+        std::string getPassword(void);
         Client* getClient(const std::string& nickname);
 
         class Excp : public std::exception
@@ -57,8 +61,7 @@ class Server
         fd_set                      _ER_fds;
         std::map<int, Client*>      _Clients;   // fd : client
         std::map<std::string, int>  _nickname;  // nick : fd
-        std::map<std::string, int>  _nickname;  // nick : fd
-        Command                     _command;
+        Command*                    _command;
 };
 
 bool argsAreValid(std::string port, std::string password);

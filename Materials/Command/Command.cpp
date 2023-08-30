@@ -5,6 +5,11 @@ Command::Command()
 
 }
 
+Command::Command(Server *server) : _server(server)
+{
+
+}
+
 Command::~Command()
 {
 
@@ -40,7 +45,7 @@ bool Command::nickIsCorrect(Client* C)  // // must by update
     std::size_t pos = buffer.substr(5).find_first_of(notAllowed);
     if (pos == std::string::npos)
     {
-        _nickname = buffer.substr(5);
+        // _nick = buffer.substr(5);
         return true;
     }
     return false ;
@@ -55,8 +60,34 @@ bool Command::userIsCorrect(Client* C)  // must by update
     std::size_t pos = buffer.substr(5).find_first_of(notAllowed);
     if (pos == std::string::npos)
     {
-        _user = buffer.substr(5,buffer.find(' '));
+        // _user = buffer.substr(5,buffer.find(' '));
         return true;
     }
     return false ;
+}
+
+void Command::commandPASS(Client* C, std::vector<std::string>& arguments)
+{
+    if (C->isRegistered())
+    {
+        C->reply(ERR_ALREADYREGISTERED(C->getNick()));
+        return;
+    }
+
+    if (arguments.empty())
+    {
+        C->reply(ERR_NEEDMOREPARAMS(C->getNick(), "PASS"));
+        return ;
+    }
+
+    _server->getPassword();
+
+    // if (_server->getPassword() != arguments[0].substr(arguments[0][0] == ':' ? 1 : 0))
+    // {
+    //     client->reply(ERR_PASSWDMISMATCH(client->getNick()));
+    //     return ;
+    // }
+    // client->unlockPasswd();
+    // client->registering();
+    
 }

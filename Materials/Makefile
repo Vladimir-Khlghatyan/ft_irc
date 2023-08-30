@@ -16,7 +16,7 @@ SRCSCOMMAND	=	$(wildcard $(SRCCOMMAND_DIR)/*.cpp)
 
 HEADERS = $(wildcard $(SRCCOMMAND_DIR)*.hpp) $(wildcard $(SRCCOMMAND_DIR)*.tpp) \
 			$(wildcard $(SRCClient_DIR)*.hpp) $(wildcard $(SRCClient_DIR)*.tpp) \
-				$(wildcard $(SRC_DIR)*.hpp) $(wildcard $(SRC_DIR)*.tpp)
+				$(wildcard $(SRC_DIR)*.hpp) $(wildcard $(SRC_DIR)*.tpp) $(wildcard ./*.tpp)
 
 RMIF	=	rm -f
 

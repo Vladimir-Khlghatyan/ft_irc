@@ -4,6 +4,13 @@ Server::Server(const char *port, const char *password)
 {
     this->_port = std::atoi(port);
     this->_password = password;
+
+    _command = new Command(this);
+}
+
+Server::~Server(void)
+{
+    delete _command;
 }
 
 //-------------------------------       Excp::Excp        ----------------------
@@ -170,7 +177,7 @@ void    Server::ReadingforDescriptor(void)
                 std::cout<< "[" << it->first <<"]" << buffer << std::endl;
                 it->second->setInputBuffer(buffer, sizeBuff);
                 it->second->setCommand();
-                if (!_Clients[fdClient]->isRegistered())
+                if (!_Clients[it->first]->isRegistered())
                 {
                     this->registeration(it->first);
                     it->second->setRegistered();
@@ -211,7 +218,7 @@ bool Server::registeration(int fdClient)
 
     switch (_Clients[fdClient]->getRegLevel()) {
         case 0:
-            if (!_command.passwordIsCorrect(_Clients[fdClient]))
+            if (!_command->passwordIsCorrect(_Clients[fdClient]))
             {
                 std::cout << "incorrect password" << std::endl;
                 _Clients[fdClient]->incrementPassTryCount();
@@ -219,10 +226,11 @@ bool Server::registeration(int fdClient)
             }
             std::cout<<"other command that you cannot type"<<std::endl;
             break;
-        case 1,2:
+        case 1:
+        case 2:
             if (buffer == "NICK")
             {
-                if (!_command.nickIsCorrect(_Clients[fdClient])
+                if (!_command->nickIsCorrect(_Clients[fdClient]))
                 {
                     std::cout << "incorrect nickName" << std::endl;
                     return false;
@@ -230,7 +238,7 @@ bool Server::registeration(int fdClient)
             }
             if (buffer == "USER")
             {
-                if (!_command.userIsCorrect(_Clients[fdClient]))
+                if (!_command->userIsCorrect(_Clients[fdClient]))
                 {
                     std::cout << "incorrect USER" << std::endl;
                     return false;
@@ -269,7 +277,7 @@ void Server::closeFreeALL(void)
 
 void    Server::start(void)
 {
-    _command.setPass(_password);
+    _command->setPass(_password);
     this->initValueStruct();
 
     this->bindListnServer();
@@ -286,6 +294,11 @@ void    Server::start(void)
 }
 
 //------------------------------------------------------------------------------
+
+std::string Server::getPassword(void)
+{
+    return _password;
+}
 
 Client* Server::getClient(const std::string& nickname)
 {

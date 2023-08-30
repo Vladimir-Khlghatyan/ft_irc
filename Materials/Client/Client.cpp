@@ -18,11 +18,21 @@ Client::Client(int fd, struct sockaddr_in client_addr)
     _passTryCount = 0;
     _regLevel = 0;
     _sizeBuff = 0;
+
+    // այս մասը պետք է ստուգել, արդյոք hostname-ը ճիշտ է ստացվում
+    char hostname[NI_MAXHOST];    
+    gethostname(hostname, sizeof(hostname));
+    _hostname = hostname;
 }
 
 std::string Client::getInputBuffer(void)
 {
     return _inputBuffer;
+}
+
+std::string Client::getNick(void)
+{
+    return _nick;
 }
 
 int Client::getPassTryCount(void)
@@ -59,7 +69,7 @@ std::string Client::getCommand(void)
 void Client::setCommand(void)
 {
     if (!_inputBuffer.empty())
-        _command = _inputBuffer.substr(0,find(' '));
+        _command = _inputBuffer.substr(0, _inputBuffer.find_first_of(' '));
 }
 
 void Client::setRegistered(void)
@@ -82,4 +92,25 @@ void Client::setRegLevel(int level)
 bool Client::isRegistered(void)
 {
     return _registered;
+}
+
+std::string	Client::getPrefix(void)
+{
+    std::string prefix = _nick;
+
+    if (!_user.empty())
+        prefix += "!" + _user;
+
+    if (!_hostname.empty())
+        prefix += "@" + _hostname;
+
+    return prefix;
+}
+
+void Client::reply(const std::string& reply)
+{
+    std::string buffer = ":" + this->getPrefix() + " " + reply + "\r\n";
+
+    if (send(_fd, buffer.c_str(), buffer.length(), 0) == -1)
+        std::cout << "Error: can't send message to client." << std::endl;
 }
