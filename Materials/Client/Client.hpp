@@ -15,12 +15,14 @@ class Client
         int getPassTryCount(void);
         int getSizeBuff(void);
         int getRegLevel(void);
+        std::string getCommand(void);
 
+        void setCommand(void);
         void setInputBuffer(const char *s, int len);
-        void setRegistered(bool reg);
-        void setPassTryCount(int arg);
+        void setRegistered(void);
+        void setRegLevel(int level);
 
-        void incrementRegLevel(void);
+        void incrementPassTryCount(void);
         bool isRegistered(void);
 
     private:
@@ -31,6 +33,8 @@ class Client
         std::string _pass; // Command: PASS   Parameters: <password>
         std::string _nick; // Command: NICK   Parameters: <nikname>
         std::string _user;
+        std::string _command;
+        std::vector<std::string> 
         bool        _registered;
         int         _passTryCount; // max 3
         int         _regLevel; // registration level must be 3 (password, nickname and username)

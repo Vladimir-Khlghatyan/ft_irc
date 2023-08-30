@@ -57,6 +57,7 @@ class Server
         fd_set                      _ER_fds;
         std::map<int, Client*>      _Clients;   // fd : client
         std::map<std::string, int>  _nickname;  // nick : fd
+        std::map<std::string, int>  _nickname;  // nick : fd
         Command                     _command;
 };
 

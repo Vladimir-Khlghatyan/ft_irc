@@ -44,30 +44,38 @@ void Client::setInputBuffer(const char *s, int len)
 {   
     std::string a(s, len);
 
-    // if (a.find("\r\n"))
-    //     this->_s = a.substr(0, a.find("\r,\n"));
-    // else if (a.find('\n'))
-    this->_inputBuffer = a.substr(0, a.find('\n') - 1);
-    
-    std::cout<<"|"<<a<<"|"<<"["<<this->_inputBuffer<<"]"<<a.find('\n')<<std::endl;
+    if (a.find("\r\n"))
+        this->_inputBuffer = a.substr(0, len - 1);//for \0
+    else if (a.find('\n'))
+        this->_inputBuffer = a.substr(0, len);
     _sizeBuff = len;
 }
 
-void Client::setRegistered(bool reg)
+std::string Client::getCommand(void)
 {
-    // if (_passTryCount == 3)
-        _registered = reg;
+    return _command;
 }
 
-void Client::setPassTryCount(int arg)
+void Client::setCommand(void)
 {
-    _passTryCount = arg;
+    if (!_inputBuffer.empty())
+        _command = _inputBuffer.substr(0,find(' '));
+}
+
+void Client::setRegistered(void)
+{
+    _registered = true;
+}
+
+void Client::incrementPassTryCount(void)
+{
+    ++_passTryCount;
 }
 
 
-void Client::incrementRegLevel(void)
+void Client::setRegLevel(int level)
 {
-    ++_regLevel;
+    _regLevel = level;
 }
 
 

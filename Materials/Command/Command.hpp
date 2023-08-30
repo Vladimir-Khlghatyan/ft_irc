@@ -13,7 +13,9 @@ class Command
         ~Command();
         void setPass(std::string password);
         std::string getPass(void);
-        bool PASS(Client* C);
+        bool passwordIsCorrect(Client* C);
+        bool nickIsCorrect(Client* C);
+        bool userIsCorrect(Client* C);
     private:
         std::string _password;
 };
