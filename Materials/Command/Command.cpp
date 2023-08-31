@@ -80,13 +80,18 @@ void Command::commandPASS(Client* C, std::vector<std::string>& arguments)
         return ;
     }
 
-    _server->getPassword();
+    std::string password;
+    if (arguments[0][0] == ':')
+        password = arguments[0].substr(1);
+    else
+        password = arguments[0];
 
-    // if (_server->getPassword() != arguments[0].substr(arguments[0][0] == ':' ? 1 : 0))
-    // {
-    //     client->reply(ERR_PASSWDMISMATCH(client->getNick()));
-    //     return ;
-    // }
+    if (password != _server->getPassword())
+    {
+        C->reply(ERR_PASSWDMISMATCH(C->getNick()));
+        return ;
+    }
+
     // client->unlockPasswd();
     // client->registering();
     
