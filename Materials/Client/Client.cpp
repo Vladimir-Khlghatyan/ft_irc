@@ -6,7 +6,6 @@ Client::Client() : _fd(0)
     _passTryCount = 0;
     _regLevel = 0;
     _sizeBuff = 0;
-    
 }
 
 Client::Client(int fd, struct sockaddr_in client_addr)
@@ -74,7 +73,8 @@ void Client::setCommand(void)
 
 void Client::setRegistered(void)
 {
-    _registered = true;
+    if (_pass && _name && _nick)
+        _registered = true;
 }
 
 void Client::incrementPassTryCount(void)

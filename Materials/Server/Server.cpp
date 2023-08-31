@@ -176,16 +176,35 @@ void    Server::ReadingforDescriptor(void)
                 //:Name COMMAND parameter list
                 std::cout<< "[" << it->first <<"]" << buffer << std::endl;
                 it->second->setInputBuffer(buffer, sizeBuff);
+                it->second->splitBuffer();
                 it->second->setCommand();
-                if (!_Clients[it->first]->isRegistered())
-                {
-                    this->registeration(it->first);
-                    it->second->setRegistered();
-                    // Add the new client_fd to the set
-                    // այստեղ անհրաժեշտ է թարմացնել նաև _nickname անդամ փոփոխականը;
-                }
+                // while (it->second->getCommand())
+                // {
+                    if (!it->second->getPass().empty())
+                    {
 
-                // this->managClient(it);
+                        if (buffer == "NICK")
+                        {
+                            if (!_command->nickIsCorrect(_Clients[fdClient]))
+                            {
+                                std::cout << "incorrect nickName" << std::endl;
+
+                            }
+                            it->second->setRegistered();
+                        }
+                        if (buffer == "USER")
+                        {
+                            if (!_command->userIsCorrect(_Clients[fdClient]))
+                            {
+                                std::cout << "incorrect USER" << std::endl;
+                            }
+                            it->second->setRegistered();
+                        }
+                    }
+                    else
+                        this->correctPassword(it->first);
+                    it->second->setCommand();
+                // }
             }
         }
         if (FD_ISSET(it->first, &_ER_fds))
@@ -199,9 +218,9 @@ void    Server::ReadingforDescriptor(void)
     }
 }
 
-//------------------------------------------------    registeration -------------------
+//------------------------------------------------    correctPassword -------------------
 
-bool Server::registeration(int fdClient)
+bool Server::correctPassword(int fdClient)
 {
     if (_Clients[fdClient]->getPassTryCount() > 2)
     {
@@ -211,42 +230,15 @@ bool Server::registeration(int fdClient)
         this->_Clients.erase(fdClient);
         return false;
     }
-
     std::cout << "line" << __LINE__ << std::endl; // error logger
 
-    std::string buffer = _Clients[fdClient]->getCommand();
-
-    switch (_Clients[fdClient]->getRegLevel()) {
-        case 0:
-            if (!_command->passwordIsCorrect(_Clients[fdClient]))
-            {
-                std::cout << "incorrect password" << std::endl;
-                _Clients[fdClient]->incrementPassTryCount();
-                return false;
-            }
-            std::cout<<"other command that you cannot type"<<std::endl;
-            break;
-        case 1:
-        case 2:
-            if (buffer == "NICK")
-            {
-                if (!_command->nickIsCorrect(_Clients[fdClient]))
-                {
-                    std::cout << "incorrect nickName" << std::endl;
-                    return false;
-                }
-            }
-            if (buffer == "USER")
-            {
-                if (!_command->userIsCorrect(_Clients[fdClient]))
-                {
-                    std::cout << "incorrect USER" << std::endl;
-                    return false;
-                }
-            }
-            std::cout<<"other command that you cannot type"<<std::endl;
-            break;
+    if (_command->passwordIsCorrect(_Clients[fdClient]))
+    {
+        std::cout<<"ok"<<std::endl;
+        return true;
     }
+    _Clients[fdClient]->incrementPassTryCount();
+    
     std::cout << "line" << __LINE__ << std::endl; // error logger
     return false;
 }

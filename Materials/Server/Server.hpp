@@ -34,7 +34,7 @@ class Server
         void start(void);
         void closeFreeALL(void);
         void managClient(std::map<int, Client*>::iterator it);
-        bool registeration(int fdClient);
+        bool correctPassword(int fdClient);
 
         std::string getPassword(void);
         Client* getClient(const std::string& nickname);

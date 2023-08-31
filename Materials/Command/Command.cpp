@@ -25,16 +25,6 @@ std::string Command::getPass(void)
     return _password;
 }
 
-bool Command::passwordIsCorrect(Client* C)
-{
-    std::string fullPass = "PASS " + _password;
-    if (C->getInputBuffer() == fullPass)
-    {
-        C->setRegLevel(1);
-        return true;
-    }
-    return false ;
-}
 
 bool Command::nickIsCorrect(Client* C)  // // must by update
 {
@@ -45,7 +35,7 @@ bool Command::nickIsCorrect(Client* C)  // // must by update
     std::size_t pos = buffer.substr(5).find_first_of(notAllowed);
     if (pos == std::string::npos)
     {
-        // _nick = buffer.substr(5);
+        _nick = buffer.substr(5);
         return true;
     }
     return false ;
@@ -66,6 +56,25 @@ bool Command::userIsCorrect(Client* C)  // must by update
     return false ;
 }
 
+bool Command::passwordIsCorrect(Client* C)
+{
+    if (C->getCommand(void) != "PASS")
+    {
+        std::cout<<"another command you can't write"<<std::endl;
+        return false ;
+    }
+    std::string fullPass = "PASS " + _password;
+    if (C->getInputBuffer() == fullPass)
+    {
+        C->setPass(_password);
+        return true;
+    }
+    else
+        std::cout << "incorrect password" << std::endl;
+    return false ;
+}
+
+
 void Command::commandPASS(Client* C, std::vector<std::string>& arguments)
 {
     if (C->isRegistered())
@@ -73,7 +82,6 @@ void Command::commandPASS(Client* C, std::vector<std::string>& arguments)
         C->reply(ERR_ALREADYREGISTERED(C->getNick()));
         return;
     }
-
     if (arguments.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNick(), "PASS"));
