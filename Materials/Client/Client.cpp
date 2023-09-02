@@ -49,31 +49,95 @@ int Client::getRegLevel(void)
     return _regLevel;
 }
 
+void Client::setNICK(std::string nick)
+{
+    _nick = nick;
+}
+
+void Client::setUSER(std::string user)
+{
+    _user = user;
+}
+
+void Client::setPASS(std::string pass)
+{
+    _pass = pass;
+}
+
 void Client::setInputBuffer(const char *s, int len)
 {   
     std::string a(s, len);
 
-    if (a.find("\r\n"))
-        this->_inputBuffer = a.substr(0, len - 1);//for \0
-    else if (a.find('\n'))
-        this->_inputBuffer = a.substr(0, len);
+    this->_inputBuffer = a.substr(0, len);//for \0
     _sizeBuff = len;
+}
+
+void Client::splitBufferToList(void)
+{
+    std::string str = _inputBuffer;
+    std::string delimiter = "\r\n";
+
+    size_t start = 0;
+    _List.clear();
+
+    if (str.find(delimiter) == std::string::npos)
+    {
+        delimiter = '\n';
+    }
+    size_t end = str.find(delimiter);
+    while (end != std::string::npos) {
+        _List.push_back(str.substr(start, end - start));
+        start = end + delimiter.length();
+        end = str.find(delimiter, start);
+    }
+}
+
+
+void Client::setArguments(void)
+{
+    bool colon = false;
+    if (!_arguments.empty())
+        _arguments.clear();
+    _command = "";
+
+    if (!_List.empty())
+    {
+        std::stringstream ss(_List.front());
+        std::string word;
+
+        if (_List.front()[0] != ' ') //before command have space
+        {
+            ss >> word;
+            _command = word;
+        }
+        while (ss >> word) {
+            if (!colon)
+                _arguments.push_back(word);
+            else
+                _arguments.back() += word;
+            if (word[0] == ':')
+                colon = true;
+        }
+        _List.pop_front();          // in list arguments delete first line
+    }
 }
 
 std::string Client::getCommand(void)
 {
     return _command;
 }
-
-void Client::setCommand(void)
+std::vector <std::string> Client::getArguments(void)
 {
-    if (!_inputBuffer.empty())
-        _command = _inputBuffer.substr(0, _inputBuffer.find_first_of(' '));
+    return _arguments;
+}
+std::string Client::getPass(void)
+{
+    return _pass;
 }
 
 void Client::setRegistered(void)
 {
-    if (_pass && _name && _nick)
+    if (!_pass.empty() && _user.empty() && _nick.empty())
         _registered = true;
 }
 

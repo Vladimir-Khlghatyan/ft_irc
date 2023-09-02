@@ -6,6 +6,10 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <string>
+#include <vector>
+#include <list>
+#include <sstream>
 
 class Client
 {
@@ -15,18 +19,25 @@ class Client
 
         std::string getInputBuffer(void);
         std::string getNick(void);
+        std::string getPass(void);
         int getPassTryCount(void);
         int getSizeBuff(void);
         int getRegLevel(void);
         std::string getCommand(void);
+        std::vector <std::string> getArguments(void);
 
-        void setCommand(void);
         void setInputBuffer(const char *s, int len);
         void setRegistered(void);
         void setRegLevel(int level);
+        void setNICK(std::string nick);
+        void setUSER(std::string user);
+        void setPASS(std::string pass);
+        void splitBufferToVector(void);
+        void setArguments(void);
 
-        void incrementPassTryCount(void);
+        void splitBufferToList(void);
         bool isRegistered(void);
+        void incrementPassTryCount(void);
 
         std::string	getPrefix(void);
         void reply(const std::string& reply);
@@ -41,6 +52,8 @@ class Client
         std::string _user;
         std::string _hostname;
         std::string _command;
+        std::vector <std::string> _arguments;
+        std::list <std::string> _List;
         
         bool        _registered;
         int         _passTryCount; // max 3

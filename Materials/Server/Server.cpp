@@ -105,7 +105,7 @@ void    Server::ClientConnect(void)
     }
     else if (_ready_FD == 0)
     {
-        std::cout<< "No activity within 2 seconds." << std::endl;
+        // std::cout<< "No activity within 2 seconds." << std::endl;
     }
     else
     {
@@ -174,27 +174,41 @@ void    Server::ReadingforDescriptor(void)
             {
                 // we need a parsing string geved                                  --------------------!!!!!!!!!
                 //:Name COMMAND parameter list
-                std::cout<< "[" << it->first <<"]" << buffer << std::endl;
+                // std::cout<< "[++" << it->first <<"++]" << buffer;
                 it->second->setInputBuffer(buffer, sizeBuff);
-                it->second->splitBuffer();
-                it->second->setCommand();
-                // while (it->second->getCommand())
+                it->second->splitBufferToList();
+                it->second->setArguments();
+                // --------------------------     prints  arguments
+                // while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
                 // {
+                //     std::cout<<"command=" <<it->second->getCommand()<<std::endl;
+                //     std::vector<std::string>v = it->second->getArguments();
+                //     int i = 0;
+                //     while(!v.empty())
+                //     {
+                //         std::cout<<"argument =["<<i<<"]"<<v.at(0)<<std::endl;
+                //         v.erase(v.begin());
+                //         i++;
+                //     }
+                    
+                // }
+                while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
+                {
                     if (!it->second->getPass().empty())
                     {
 
-                        if (buffer == "NICK")
+                        if (it->second->getCommand() == "NICK")
                         {
-                            if (!_command->nickIsCorrect(_Clients[fdClient]))
+                            if (!_command->nickIsCorrect(_Clients[it->first]))
                             {
                                 std::cout << "incorrect nickName" << std::endl;
 
                             }
                             it->second->setRegistered();
                         }
-                        if (buffer == "USER")
+                        if (it->second->getCommand() == "USER")
                         {
-                            if (!_command->userIsCorrect(_Clients[fdClient]))
+                            if (!_command->userIsCorrect(_Clients[it->first]))
                             {
                                 std::cout << "incorrect USER" << std::endl;
                             }
@@ -203,8 +217,8 @@ void    Server::ReadingforDescriptor(void)
                     }
                     else
                         this->correctPassword(it->first);
-                    it->second->setCommand();
-                // }
+                    it->second->setArguments();
+                }
             }
         }
         if (FD_ISSET(it->first, &_ER_fds))
@@ -230,7 +244,6 @@ bool Server::correctPassword(int fdClient)
         this->_Clients.erase(fdClient);
         return false;
     }
-    std::cout << "line" << __LINE__ << std::endl; // error logger
 
     if (_command->passwordIsCorrect(_Clients[fdClient]))
     {
@@ -238,12 +251,10 @@ bool Server::correctPassword(int fdClient)
         return true;
     }
     _Clients[fdClient]->incrementPassTryCount();
-    
-    std::cout << "line" << __LINE__ << std::endl; // error logger
     return false;
 }
 
-//-------------------------------------------------      Manag Client   ---------------------
+//-------------------------------------------------      Manag Client   -------------------
 
 void Server::managClient(std::map<int, Client*>::iterator it)
 {
@@ -251,7 +262,7 @@ void Server::managClient(std::map<int, Client*>::iterator it)
     send(it->first, str, strlen(str), 0);
 }
 
-//--------------------------------------------------      close Free ALL --------------------
+//--------------------------------------------------      close Free ALL ------------------
 
 void Server::closeFreeALL(void)
 {

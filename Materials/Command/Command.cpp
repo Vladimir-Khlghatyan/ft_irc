@@ -35,7 +35,7 @@ bool Command::nickIsCorrect(Client* C)  // // must by update
     std::size_t pos = buffer.substr(5).find_first_of(notAllowed);
     if (pos == std::string::npos)
     {
-        _nick = buffer.substr(5);
+        C->setNICK(buffer.substr(5));
         return true;
     }
     return false ;
@@ -50,7 +50,7 @@ bool Command::userIsCorrect(Client* C)  // must by update
     std::size_t pos = buffer.substr(5).find_first_of(notAllowed);
     if (pos == std::string::npos)
     {
-        // _user = buffer.substr(5,buffer.find(' '));
+        C->setUSER(buffer.substr(5));
         return true;
     }
     return false ;
@@ -58,15 +58,14 @@ bool Command::userIsCorrect(Client* C)  // must by update
 
 bool Command::passwordIsCorrect(Client* C)
 {
-    if (C->getCommand(void) != "PASS")
+    if (C->getCommand() != "PASS")
     {
         std::cout<<"another command you can't write"<<std::endl;
         return false ;
     }
-    std::string fullPass = "PASS " + _password;
-    if (C->getInputBuffer() == fullPass)
+    if (!C->getArguments().empty() && C->getArguments().at(0) == _password)
     {
-        C->setPass(_password);
+        C->setPASS(_password);
         return true;
     }
     else
