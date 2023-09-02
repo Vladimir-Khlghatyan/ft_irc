@@ -126,10 +126,12 @@ std::string Client::getCommand(void)
 {
     return _command;
 }
+
 std::vector <std::string> Client::getArguments(void)
 {
     return _arguments;
 }
+
 std::string Client::getPass(void)
 {
     return _pass;

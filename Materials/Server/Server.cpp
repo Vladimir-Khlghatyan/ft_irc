@@ -196,24 +196,24 @@ void    Server::ReadingforDescriptor(void)
                 {
                     if (!it->second->getPass().empty())
                     {
+                        _command->commandHandler(it->second);
+                        // if (it->second->getCommand() == "NICK")
+                        // {
+                        //     if (!_command->nickIsCorrect(_Clients[it->first]))
+                        //     {
+                        //         std::cout << "incorrect nickName" << std::endl;
 
-                        if (it->second->getCommand() == "NICK")
-                        {
-                            if (!_command->nickIsCorrect(_Clients[it->first]))
-                            {
-                                std::cout << "incorrect nickName" << std::endl;
-
-                            }
-                            it->second->setRegistered();
-                        }
-                        if (it->second->getCommand() == "USER")
-                        {
-                            if (!_command->userIsCorrect(_Clients[it->first]))
-                            {
-                                std::cout << "incorrect USER" << std::endl;
-                            }
-                            it->second->setRegistered();
-                        }
+                        //     }
+                        //     it->second->setRegistered();
+                        // }
+                        // if (it->second->getCommand() == "USER")
+                        // {
+                        //     if (!_command->userIsCorrect(_Clients[it->first]))
+                        //     {
+                        //         std::cout << "incorrect USER" << std::endl;
+                        //     }
+                        //     it->second->setRegistered();
+                        // }
                     }
                     else
                         this->correctPassword(it->first);
