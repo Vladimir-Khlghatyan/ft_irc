@@ -17,29 +17,25 @@ class Client
         Client();
         Client(int fd, struct sockaddr_in client_addr);
 
+        int getFd(void);
         std::string getInputBuffer(void);
-        std::string getNick(void);
-        std::string getPass(void);
-        int getPassTryCount(void);
+        std::string getNICK(void);
+        std::string getPASS(void);
         int getSizeBuff(void);
-        int getRegLevel(void);
         std::string getCommand(void);
+        std::string	getPrefix(void);
         std::vector <std::string> getArguments(void);
 
         void setInputBuffer(const char *s, int len);
         void setRegistered(void);
-        void setRegLevel(int level);
         void setNICK(std::string nick);
         void setUSER(std::string user);
         void setPASS(std::string pass);
-        void splitBufferToVector(void);
         void setArguments(void);
 
         void splitBufferToList(void);
         bool isRegistered(void);
-        void incrementPassTryCount(void);
 
-        std::string	getPrefix(void);
         void reply(const std::string& reply);
 
     private:
@@ -55,9 +51,8 @@ class Client
         std::vector <std::string> _arguments;
         std::list <std::string> _List;
         
-        bool        _registered;
-        int         _passTryCount; // max 3
-        int         _regLevel; // registration level must be 3 (password, nickname and username)
+        bool        _registered;   // registration level must be 3 (password, nickname and username)
+        int         _passTryCount; // max 3 
         int         _sizeBuff;
 };
 
