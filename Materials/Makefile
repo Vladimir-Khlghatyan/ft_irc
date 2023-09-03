@@ -10,7 +10,7 @@ SRCCOMMAND_DIR = ./Command
 SRCCANNEL_DIR = ./Channel
 
 # List of source files
-SRC			=	$(wildcard $(SRC_DIR)/*.cpp) \
+SRCS		=	$(wildcard $(SRC_DIR)/*.cpp) \
 				$(wildcard ./*.cpp)
 SRCSCLIENT	=	$(wildcard $(SRCCLIENT_DIR)/*.cpp)
 SRCSCOMMAND	=	$(wildcard $(SRCCOMMAND_DIR)/*.cpp)
