@@ -35,7 +35,7 @@ class Server
         void closeFreeALL(void);
         void managClient(std::map<int, Client*>::iterator it);
         bool correctPassword(int fdClient);
-        void setToMaps(Client* C);
+        void updateNickMap(Client* C, std::string &nick);
 
         std::string getPASS(void);
         Client* getClient(const std::string& nickname);

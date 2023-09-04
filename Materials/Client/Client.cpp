@@ -104,14 +104,6 @@ void Client::setInputBuffer(const char *s, int len)
     _sizeBuff = len;
 }
 
-
-
-void Client::setRegistered(void)
-{
-    if (!_pass.empty() && _user.empty() && _nick.empty())
-        _registered = true;
-}
-
 void Client::setArguments(void)
 {
     if (!_arguments.empty())
@@ -162,13 +154,6 @@ void Client::setArguments(void)
 
 
 
-
-bool Client::isRegistered(void)
-{
-    return _registered;
-}
-
-
 void Client::splitBufferToList(void)
 {
     std::string str = _inputBuffer;
@@ -187,6 +172,18 @@ void Client::splitBufferToList(void)
         start = end + delimiter.length();
         end = str.find(delimiter, start);
     }
+}
+
+
+void Client::checkForRegistered(void)
+{
+    if (!_pass.empty() && _user.empty() && _nick.empty())
+        _registered = true;
+}
+
+bool Client::isRegistered(void)
+{
+    return _registered;
 }
 
 
