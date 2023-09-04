@@ -22,18 +22,20 @@ class Command
     public:
         Command(Server *server);
         ~Command();
+        //--------------------------------------------      set     ---
         void setPass(std::string password);
         std::string getPass(void);
         bool passwordIsCorrect(Client* C);
-        //---------------------------------------------   check
+        //---------------------------------------------   check     ---
 
         bool nickIsCorrect(std::string buffer);
+
+        //---------------------------------------------   commands  ---
         void commandHandler(Client* C);
-        //---------------------------------------------   commands
         
         void commandNICK(Client* C);
         void commandPASS(Client* C);
-
+        void commandUSER(Client *C);
     private:
         std::string _password;
         std::map<std::string, FUNC> _commands;

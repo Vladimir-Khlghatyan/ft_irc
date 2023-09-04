@@ -3,12 +3,12 @@
 
 Command::Command(Server *server) : _server(server)
 {
-    FUNC f[] = {&Command::commandPASS, &Command::commandNICK};
+    FUNC f[] = {&Command::commandPASS, &Command::commandNICK, &Command::commandUSER};
 
     _commands.insert(std::make_pair("PASS", f[0]));
     _commands.insert(std::make_pair("NICK", f[1]));
-    // _commands.insert(make_pair("PASS", f[0]));
-    // _commands.insert(make_pair("PASS", f[0]));
+    _commands.insert(std::make_pair("USER", f[2]));
+    // _commands.insert(std::make_pair("", f[]));
 }
 
 Command::~Command()
@@ -112,34 +112,53 @@ void Command::commandPASS(Client* C)
 
 void Command::commandNICK(Client* C)
 {
-    if (!C->getPASS().empty())
+    std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+    if (C->getPASS().empty())
     {
         C->reply(ERR_NOTREGISTERED(C->getNICK()));
         return ;
     }
-
     if (_arg.empty())
     {
         C->reply(ERR_NONICKNAMEGIVEN(C->getNICK()));
         return ;
     }
-
     std::string nick = _arg[0];
     if (!nickIsCorrect(nick))
     {
         C->reply(ERR_ERRONEUSNICKNAME(C->getNICK(), nick));
         return ;
     }
-
     Client* client = _server->getClient(nick);
     if (client && client != C)
     {
         C->reply(ERR_NICKNAMEINUSE(C->getNICK(), nick));
         return ;
     }
-
     _server->updateNickMap(C, nick);
     C->setNICK(nick);
     C->checkForRegistered();
 }
 
+void Command::commandUSER(Client *C)
+{
+    std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+    if (C->getPASS().empty())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        return ;
+    }
+    if (C->isRegistered())
+    {
+        C->reply(ERR_ALREADYREGISTERED(C->getNICK()));
+        return ;
+    }
+    if (_arg.size() < 4)
+    {
+        C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "USER"));
+        return ;
+    }
+
+    C->setUSER(_arg[0], _arg[3]);
+    C->checkForRegistered();
+}

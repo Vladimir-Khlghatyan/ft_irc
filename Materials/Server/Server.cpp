@@ -277,7 +277,7 @@ Client* Server::getClient(const std::string& nickname)
 
 void Server::updateNickMap(Client* C, std::string &nick)  //   all maps add Client
 {
-    if (!this->getClient(C->getNICK()))
+    if (this->getClient(C->getNICK()))
         _nickname.erase(C->getNICK());
     _nickname[nick] = C->getFd();
 }

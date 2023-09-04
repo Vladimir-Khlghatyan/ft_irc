@@ -86,9 +86,10 @@ void Client::setNICK(std::string nick)
     _nick = nick;
 }
 
-void Client::setUSER(std::string user)
+void Client::setUSER(std::string &user, std::string &realname)
 {
     _user = user;
+    _realname = realname;
 }
 
 void Client::setPASS(std::string pass)
@@ -131,12 +132,13 @@ void Client::setArguments(void)
                 i++;
             end = str.find(delimiter, i);
             while (end != std::string::npos) {
-                if (str[i] && str[i] == ':')
+                if (str[i] && str[i] == ':' && str[++i])
                 {
-                    _arguments.push_back(str.substr(i));
+                    _arguments.push_back(str.substr(i, str.length() - i - 1));
                     break ;
                 }
-                _arguments.push_back(str.substr(i, end - i));
+                if (str[i])
+                    _arguments.push_back(str.substr(i, end - i));
                 i = end + 1;
                 while(str[i] && str[i] == ' ')
                     i++;

@@ -28,7 +28,7 @@ class Client
 
         void setInputBuffer(const char *s, int len);
         void setNICK(std::string nick);
-        void setUSER(std::string user);
+        void setUSER(std::string &user, std::string &realname);
         void setPASS(std::string pass);
         void setArguments(void);
 
@@ -47,6 +47,7 @@ class Client
         std::string _pass; // Command: PASS   Parameters: <password>
         std::string _nick; // Command: NICK   Parameters: <nikname>
         std::string _user;
+        std::string _realname;
         std::string _hostname;
         std::string _command;
         std::vector <std::string> _arguments;
