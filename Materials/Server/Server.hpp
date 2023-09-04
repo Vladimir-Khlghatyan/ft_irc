@@ -35,8 +35,9 @@ class Server
         void closeFreeALL(void);
         void managClient(std::map<int, Client*>::iterator it);
         bool correctPassword(int fdClient);
+        void setToMaps(Client* C);
 
-        std::string getPassword(void);
+        std::string getPASS(void);
         Client* getClient(const std::string& nickname);
 
         class Excp : public std::exception

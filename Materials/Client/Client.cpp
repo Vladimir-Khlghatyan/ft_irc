@@ -4,7 +4,6 @@ Client::Client() : _fd(0)
 {
     _registered = false;
     _passTryCount = 0;
-    _regLevel = 0;
     _sizeBuff = 0;
 }
 
@@ -15,7 +14,6 @@ Client::Client(int fd, struct sockaddr_in client_addr)
 
     _registered = false;
     _passTryCount = 0;
-    _regLevel = 0;
     _sizeBuff = 0;
 
     // այս մասը պետք է ստուգել, արդյոք hostname-ը ճիշտ է ստացվում
@@ -34,14 +32,9 @@ std::string Client::getInputBuffer(void)
     return _inputBuffer;
 }
 
-std::string Client::getNick(void)
+std::string Client::getNICK(void)
 {
     return _nick;
-}
-
-int Client::getPassTryCount(void)
-{
-    return _passTryCount;
 }
 
 int Client::getSizeBuff(void)
@@ -53,10 +46,15 @@ int Client::getRegLevel(void)
 {
     return _regLevel;
 }
+int Client::getFd(void)
+{
+    return _fd;
+}
 
 void Client::setNICK(std::string nick)
 {
     _nick = nick;
+    sending(":" + old_nick + " NICK " + nick);
 }
 
 void Client::setUSER(std::string user)
@@ -100,28 +98,42 @@ void Client::splitBufferToList(void)
 
 void Client::setArguments(void)
 {
-    bool colon = false;
     if (!_arguments.empty())
         _arguments.clear();
     _command = "";
 
     if (!_List.empty())
     {
-        std::stringstream ss(_List.front());
-        std::string word;
+        std::string str(_List.front());
+        std::string delimiter = " ";
+        size_t end = 0;
+        size_t i;
+        str += ' ';
 
-        if (_List.front()[0] != ' ') //before command have space
+        if (str[0] != ' ')
         {
-            ss >> word;
-            _command = word;
+            i = str.find(delimiter);
+            _command = str.substr(0, i);
+            str = str.substr(i);
         }
-        while (ss >> word) {
-            if (!colon)
-                _arguments.push_back(word);
-            else
-                _arguments.back() += word;
-            if (word[0] == ':')
-                colon = true;
+        i = 0;
+        if (!str.empty())
+        {
+            while(str[i] && str[i] == ' ')
+                i++;
+            end = str.find(delimiter, i);
+            while (end != std::string::npos) {
+                if (str[i] && str[i] == ':')
+                {
+                    _arguments.push_back(str.substr(i));
+                    break ;
+                }
+                _arguments.push_back(str.substr(i, end - i));
+                i = end + 1;
+                while(str[i] && str[i] == ' ')
+                    i++;
+                end = str.find(delimiter, i);
+            }
         }
         _List.pop_front();          // in list arguments delete first line
     }
@@ -137,7 +149,7 @@ std::vector <std::string> Client::getArguments(void)
     return _arguments;
 }
 
-std::string Client::getPass(void)
+std::string Client::getPASS(void)
 {
     return _pass;
 }
@@ -148,22 +160,21 @@ void Client::setRegistered(void)
         _registered = true;
 }
 
-void Client::incrementPassTryCount(void)
-{
-    ++_passTryCount;
-}
 
 
-void Client::setRegLevel(int level)
-{
-    _regLevel = level;
-}
+
+
+
 
 
 bool Client::isRegistered(void)
 {
+int x;
+x= 10;
     return _registered;
 }
+
+
 
 std::string	Client::getPrefix(void)
 {
@@ -178,10 +189,18 @@ std::string	Client::getPrefix(void)
     return prefix;
 }
 
+void	Client::sending(const string& massage)
+{
+    string buff = massage + "\r\n";
+
+    if (send(_fd, buff.c_str(), buff.length(), 0) == -1)
+        cout << "Error: can't send message to client." << endl;
+}
+
 void Client::reply(const std::string& reply)
 {
-    std::string buffer = ":" + this->getPrefix() + " " + reply + "\r\n";
+    std::string buff = ":" + this->getPrefix() + " " + reply + "\r\n";
 
-    if (send(_fd, buffer.c_str(), buffer.length(), 0) == -1)
+    if (send(_fd, buff.c_str(), buff.length(), 0) == -1)
         std::cout << "Error: can't send message to client." << std::endl;
 }

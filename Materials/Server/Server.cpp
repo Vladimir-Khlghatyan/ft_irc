@@ -178,7 +178,7 @@ void    Server::ReadingforDescriptor(void)
                 it->second->setInputBuffer(buffer, sizeBuff);
                 it->second->splitBufferToList();
                 it->second->setArguments();
-                // --------------------------     prints  arguments
+                //--------------------------     prints  arguments
                 // while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
                 // {
                 //     std::cout<<"command=" <<it->second->getCommand()<<std::endl;
@@ -186,37 +186,16 @@ void    Server::ReadingforDescriptor(void)
                 //     int i = 0;
                 //     while(!v.empty())
                 //     {
-                //         std::cout<<"argument =["<<i<<"]"<<v.at(0)<<std::endl;
+                //         std::cout<<"argument =["<<i<<"]"<<"{"<<v.at(0)<<"}"<<std::endl;
                 //         v.erase(v.begin());
                 //         i++;
                 //     }
-                    
+                //     it->second->setArguments();
                 // }
+              
                 while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
                 {
-                    if (!it->second->getPass().empty())
-                    {
-                        _command->commandHandler(it->second);
-                        // if (it->second->getCommand() == "NICK")
-                        // {
-                        //     if (!_command->nickIsCorrect(_Clients[it->first]))
-                        //     {
-                        //         std::cout << "incorrect nickName" << std::endl;
-
-                        //     }
-                        //     it->second->setRegistered();
-                        // }
-                        // if (it->second->getCommand() == "USER")
-                        // {
-                        //     if (!_command->userIsCorrect(_Clients[it->first]))
-                        //     {
-                        //         std::cout << "incorrect USER" << std::endl;
-                        //     }
-                        //     it->second->setRegistered();
-                        // }
-                    }
-                    else
-                        this->correctPassword(it->first);
+                    _command->commandHandler(it->second);
                     it->second->setArguments();
                 }
             }
@@ -230,28 +209,6 @@ void    Server::ReadingforDescriptor(void)
             std::cout<<" +++++++++++++++++++++++++&_WR_fds))"<<std::endl;
         }
     }
-}
-
-//------------------------------------------------    correctPassword -------------------
-
-bool Server::correctPassword(int fdClient)
-{
-    if (_Clients[fdClient]->getPassTryCount() > 2)
-    {
-        FD_CLR(fdClient, &this->_READ_fds);
-        close(fdClient);
-        delete _Clients[fdClient];
-        this->_Clients.erase(fdClient);
-        return false;
-    }
-
-    if (_command->passwordIsCorrect(_Clients[fdClient]))
-    {
-        std::cout<<"ok"<<std::endl;
-        return true;
-    }
-    _Clients[fdClient]->incrementPassTryCount();
-    return false;
 }
 
 //-------------------------------------------------      Manag Client   -------------------
@@ -276,7 +233,9 @@ void Server::closeFreeALL(void)
     _Clients.clear();
 }
 
-//---------------------------------------------------       Server start  -------------------
+
+//                     -----------------------  Server start  -------------------------------
+
 
 void    Server::start(void)
 {
@@ -298,7 +257,7 @@ void    Server::start(void)
 
 //------------------------------------------------------------------------------
 
-std::string Server::getPassword(void)
+std::string Server::getPASS(void)
 {
     return _password;
 }
@@ -310,4 +269,14 @@ Client* Server::getClient(const std::string& nickname)
         return NULL;
 
     return _Clients.find(it->second)->second;
+}
+
+
+//-----------------------------------------------------------               SET   ------------------
+
+
+void Server::setToMaps(Client* C)  //   all maps add Client
+{
+    if (!this->getClient(C->getNICK()))
+        _nickname[C->getNICK()] = C->getFd();
 }

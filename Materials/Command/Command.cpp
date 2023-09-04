@@ -1,18 +1,14 @@
 #include "Command.hpp"
 
-Command::Command()
-{
-    FUNC f[] = {&Command::commandPASS};
-    //,&Command::commandNICK,&Command::commandUSER};
-    _commands.insert(std::pair<std::string, FUNC>("PASS", f[0]));
-}
 
 Command::Command(Server *server) : _server(server)
 {
-    FUNC f[] = {&Command::commandPASS};
-    //,&Command::commandNICK,&Command::commandUSER};
-    // _commands.insert(std::pair<std::string, FUNC>("PASS", f[0]));
-    _commands.insert(make_pair("PASS", f[0]));
+    FUNC f[] = {&Command::commandPASS, &Command::commandNICK};
+
+    _commands.insert(std::make_pair("PASS", f[0]));
+    _commands.insert(make_pair("NICK", f[0]));
+    // _commands.insert(make_pair("PASS", f[0]));
+    // _commands.insert(make_pair("PASS", f[0]));
 }
 
 Command::~Command()
@@ -32,30 +28,24 @@ std::string Command::getPass(void)
 
 void Command::commandHandler(Client* C)
 {
-    //  void (Command::*FUNC)(Client* C, std::vector<std::string>& arguments);
-    if (_server->getPassword().empty())
-        std::cout<<_server->getPassword()<< "   "<<C->getCommand()<<std::endl;
-    std::vector<std::string> arg = C->getArguments();
-    //(this->*f[DEBUG])();
-    // std::map<std::string, FUNC>::iterator pp = _commands.begin();
+    _arg = C->getArguments();
+    std::string cmd = C->getCommand();
+    std::map<std::string, FUNC>::iterator it = _commands.begin();
 
-    (this->*_commands["PASS"])(C, arg);
+    if (cmd != "PASS" && C->getPASS().empty())
+        C->reply(ERR_UNKNOWNCOMMAND(C->getNick(), C->getCommand()));
+    for( ; it != _commands.end(); ++it)
+    {
+        if (it->first == cmd)
+        {
+            (this->*_commands["PASS"])(C);
+            return ;
+        }
+    }
+    C->reply(ERR_UNKNOWNCOMMAND(C->getNick(), C->getCommand()));
 }
 
-// bool Command::nickIsCorrect(Client* C)  // // must by update
-// {
-//     std::string buffer = C->getInputBuffer();
-//     if(buffer.substr(0,5) != "NICK " || buffer.size() < 6)
-//         return false;
-//     std::string notAllowed = " ,*?!@$:#.";
-//     std::size_t pos = buffer.substr(5).find_first_of(notAllowed);
-//     if (pos == std::string::npos)
-//     {
-//         C->setNICK(buffer.substr(5));
-//         return true;
-//     }
-//     return false ;
-// }
+
 
 // bool Command::userIsCorrect(Client* C)  // must by update
 // {
@@ -72,52 +62,74 @@ void Command::commandHandler(Client* C)
 //     return false ;
 // }
 
-bool Command::passwordIsCorrect(Client* C)
+
+
+
+bool Command::nickIsCorrect(std::string buffer)  // // must by update
 {
-    if (C->getCommand() != "PASS")
+    std::string notAllowed = " ,*?!@$:#.";
+    std::size_t pos = buffer.find_first_of(notAllowed);
+    if (pos != std::string::npos)
     {
-        std::cout<<"another command you can't write"<<std::endl;
-        return false ;
+        return false;
     }
-    if (!C->getArguments().empty() && C->getArguments().at(0) == _password)
-    {
-        C->setPASS(_password);
-        return true;
-    }
-    else
-        std::cout << "incorrect password" << std::endl;
-    return false ;
+    return true;
 }
 
 
-void Command::commandPASS(Client* C, std::vector<std::string>& arguments)
+void Command::commandNICK(Client* C)
 {
-    if (C->isRegistered())
+    if (_arg.empty())
+    {
+        C->reply(ERR_NONICKNAMEGIVEN(C->getNICK()));
+        return ;
+    }
+    if (!C->getNICK().empty())
+    {
+        C->reply(ERR_ALREADYREGISTERED(C->getNICK()));
+        return ;
+    }
+    string nick = _arg[0];
+    if (!nickIsCorrect(nick))
+    {
+        C->reply(ERR_ERRONEUSNICKNAME(C->getNICK(), nick));
+        return ;
+    }
+    Client* client_avel = _server->getClient(nick);
+    if (client_avel)
+    {
+        C->reply(ERR_NICKNAMEINUSE(C->getNICK(), nick));
+        return ;
+    }
+    C->setNICK(nick);
+    C->setRegistered();
+    _server->setToMaps(C);
+}
+
+void Command::commandPASS(Client* C)
+{
+    if (!C->getPASS().empty())
     {
         C->reply(ERR_ALREADYREGISTERED(C->getNick()));
         return;
     }
-    if (arguments.empty())
+    if (_arg.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNick(), "PASS"));
         return ;
     }
-    std::string password;
-    if (arguments[0][0] == ':')
-        password = arguments[0].substr(1);
-    else
-        password = arguments[0];
 
-    if (password != _server->getPassword())
+    std::string password;
+
+    if (_arg[0][0] == ':')
+        password = _arg[0].substr(1);
+    else
+        password = _arg[0];
+
+    if (password != _server->getPASS())
     {
         C->reply(ERR_PASSWDMISMATCH(C->getNick()));
         return ;
     }
-
-
-
-
-    // client->unlockPasswd();
-    // client->registering();
-    
+    C->setPASS(password);
 }
