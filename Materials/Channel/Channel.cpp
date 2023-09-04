@@ -55,9 +55,9 @@ void Channel::nameReply(Client *C)
     for (size_t i = 0; i < _clients.size(); ++i)
     {
         std::string prefix = (_clients[i] == _admin) ? "@" : "+";
-        this->sendMessage(C->getFd(), RPL_NAMREPLY(C->getNick(), _channelName, prefix, _clients[i]->getNick()));
+        this->sendMessage(C->getFd(), RPL_NAMREPLY(C->getNICK(), _channelName, prefix, _clients[i]->getNICK()));
     }
-    this->sendMessage(C->getFd(), RPL_ENDOFNAMES(C->getNick(), _channelName));
+    this->sendMessage(C->getFd(), RPL_ENDOFNAMES(C->getNICK(), _channelName));
 }
 
 void Channel::setAdmin(void)
