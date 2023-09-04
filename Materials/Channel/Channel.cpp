@@ -18,6 +18,17 @@ std::string Channel::getKey(void)
     return _key;
 }
 
+void Channel::joinClient(Client* C)
+{
+    _clients.push_back(C);
+
+    for(size_t i = 0; i < _clients.size(); ++i)
+        this->sendMessage(_clients[i]->getFd(), RPL_JOIN(C->getPrefix(), _channelName));
+
+    this->setAdmin();
+    this->nameReply(C);
+}
+
 bool Channel::isInChannel(Client* C)
 {
     if (find(_clients.begin(), _clients.end(), C) == _clients.end())

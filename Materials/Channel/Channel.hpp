@@ -19,6 +19,7 @@ class Channel
 
         std::string getKey(void);
 
+        void joinClient(Client* C);
         bool isInChannel(Client* C);
         bool isAdmin(Client* C);
         void sendMessage(int fd, std::string message);
