@@ -29,9 +29,19 @@ void Channel::joinClient(Client* C)
     this->nameReply(C);
 }
 
+void Channel::kickClient(Client* C, const std::string& reason)
+{
+    for(size_t i = 0; i < _clients.size(); ++i)
+        this->sendMessage(_clients[i]->getFd(), RPL_KICK(_admin->getPrefix(), _channelName, C->getNICK(), reason));
+
+    std::vector<Client*>::iterator it = std::find(_clients.begin(), _clients.end(), C);
+    _clients.erase(it);
+    this->setAdmin();
+}
+
 bool Channel::isInChannel(Client* C)
 {
-    if (find(_clients.begin(), _clients.end(), C) == _clients.end())
+    if (std::find(_clients.begin(), _clients.end(), C) == _clients.end())
         return false;
     return true;
 }
@@ -55,9 +65,9 @@ void Channel::nameReply(Client *C)
     for (size_t i = 0; i < _clients.size(); ++i)
     {
         std::string prefix = (_clients[i] == _admin) ? "@" : "+";
-        this->sendMessage(C->getFd(), RPL_NAMREPLY(C->getNick(), _channelName, prefix, _clients[i]->getNick()));
+        this->sendMessage(C->getFd(), RPL_NAMREPLY(C->getNICK(), _channelName, prefix, _clients[i]->getNICK()));
     }
-    this->sendMessage(C->getFd(), RPL_ENDOFNAMES(C->getNick(), _channelName));
+    this->sendMessage(C->getFd(), RPL_ENDOFNAMES(C->getNICK(), _channelName));
 }
 
 void Channel::setAdmin(void)

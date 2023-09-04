@@ -20,6 +20,7 @@ class Channel
         std::string getKey(void);
 
         void joinClient(Client* C);
+        void kickClient(Client* C, const std::string& reason);
         bool isInChannel(Client* C);
         bool isAdmin(Client* C);
         void sendMessage(int fd, std::string message);

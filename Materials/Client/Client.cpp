@@ -46,10 +46,6 @@ int Client::getRegLevel(void)
 {
     return _regLevel;
 }
-int Client::getFd(void)
-{
-    return _fd;
-}
 
 void Client::setNICK(std::string nick)
 {
@@ -189,12 +185,12 @@ std::string	Client::getPrefix(void)
     return prefix;
 }
 
-void	Client::sending(const string& massage)
+void	Client::sending(const std::string& massage)
 {
-    string buff = massage + "\r\n";
+    std::string buff = massage + "\r\n";
 
     if (send(_fd, buff.c_str(), buff.length(), 0) == -1)
-        cout << "Error: can't send message to client." << endl;
+        std::cout << "Error: can't send message to client." << std::endl;
 }
 
 void Client::reply(const std::string& reply)
