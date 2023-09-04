@@ -24,6 +24,11 @@ Client::Client(int fd, struct sockaddr_in client_addr)
     _hostname = hostname;
 }
 
+int Client::getFd(void)
+{
+    return _fd;
+}
+
 std::string Client::getInputBuffer(void)
 {
     return _inputBuffer;
