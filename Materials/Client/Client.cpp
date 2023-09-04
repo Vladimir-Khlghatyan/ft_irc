@@ -22,6 +22,11 @@ Client::Client(int fd, struct sockaddr_in client_addr)
     _hostname = hostname;
 }
 
+
+//-------------------------------------------------------             GET               ----------------------
+
+
+
 int Client::getFd(void)
 {
     return _fd;
@@ -42,15 +47,43 @@ int Client::getSizeBuff(void)
     return _sizeBuff;
 }
 
-int Client::getRegLevel(void)
+std::string Client::getCommand(void)
 {
-    return _regLevel;
+    return _command;
 }
+
+std::vector <std::string> Client::getArguments(void)
+{
+    return _arguments;
+}
+
+std::string Client::getPASS(void)
+{
+    return _pass;
+}
+
+
+std::string	Client::getPrefix(void)
+{
+    std::string prefix = _nick;
+
+    if (!_user.empty())
+        prefix += "!" + _user;
+
+    if (!_hostname.empty())
+        prefix += "@" + _hostname;
+
+    return prefix;
+}
+
+
+//------------------------------------              SET         -----------------------
+
 
 void Client::setNICK(std::string nick)
 {
+    sending(":" + _nick + " NICK " + nick);
     _nick = nick;
-    sending(":" + old_nick + " NICK " + nick);
 }
 
 void Client::setUSER(std::string user)
@@ -71,26 +104,13 @@ void Client::setInputBuffer(const char *s, int len)
     _sizeBuff = len;
 }
 
-void Client::splitBufferToList(void)
+
+
+void Client::setRegistered(void)
 {
-    std::string str = _inputBuffer;
-    std::string delimiter = "\r\n";
-
-    size_t start = 0;
-    _List.clear();
-
-    if (str.find(delimiter) == std::string::npos)
-    {
-        delimiter = '\n';
-    }
-    size_t end = str.find(delimiter);
-    while (end != std::string::npos) {
-        _List.push_back(str.substr(start, end - start));
-        start = end + delimiter.length();
-        end = str.find(delimiter, start);
-    }
+    if (!_pass.empty() && _user.empty() && _nick.empty())
+        _registered = true;
 }
-
 
 void Client::setArguments(void)
 {
@@ -135,55 +155,46 @@ void Client::setArguments(void)
     }
 }
 
-std::string Client::getCommand(void)
-{
-    return _command;
-}
-
-std::vector <std::string> Client::getArguments(void)
-{
-    return _arguments;
-}
-
-std::string Client::getPASS(void)
-{
-    return _pass;
-}
-
-void Client::setRegistered(void)
-{
-    if (!_pass.empty() && _user.empty() && _nick.empty())
-        _registered = true;
-}
 
 
 
-
+//-----------------------------------------------------------           Registered            ---------------------------- 
 
 
 
 
 bool Client::isRegistered(void)
 {
-int x;
-x= 10;
     return _registered;
 }
 
 
-
-std::string	Client::getPrefix(void)
+void Client::splitBufferToList(void)
 {
-    std::string prefix = _nick;
+    std::string str = _inputBuffer;
+    std::string delimiter = "\r\n";
 
-    if (!_user.empty())
-        prefix += "!" + _user;
+    size_t start = 0;
+    _List.clear();
 
-    if (!_hostname.empty())
-        prefix += "@" + _hostname;
-
-    return prefix;
+    if (str.find(delimiter) == std::string::npos)
+    {
+        delimiter = '\n';
+    }
+    size_t end = str.find(delimiter);
+    while (end != std::string::npos) {
+        _List.push_back(str.substr(start, end - start));
+        start = end + delimiter.length();
+        end = str.find(delimiter, start);
+    }
 }
+
+
+
+//------------------------------------------------------------              reply               -------------------------------------
+
+
+
 
 void	Client::sending(const std::string& massage)
 {
