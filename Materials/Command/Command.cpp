@@ -6,7 +6,7 @@ Command::Command(Server *server) : _server(server)
     FUNC f[] = {&Command::commandPASS, &Command::commandNICK};
 
     _commands.insert(std::make_pair("PASS", f[0]));
-    _commands.insert(std::make_pair("NICK", f[0]));
+    _commands.insert(std::make_pair("NICK", f[1]));
     // _commands.insert(make_pair("PASS", f[0]));
     // _commands.insert(make_pair("PASS", f[0]));
 }
@@ -26,25 +26,42 @@ std::string Command::getPass(void)
     return _password;
 }
 
+
+//------------------------------------    utils command    ---------------------------
+
+
+
+bool Command::nickIsCorrect(std::string buffer)  // // must by update
+{
+    std::string notAllowed = " ,*?!@$:#.";
+    std::size_t pos = buffer.find_first_of(notAllowed);
+    if (pos != std::string::npos)
+    {
+        return false;
+    }
+    return true;
+}
+
+
+
+//-----------------------------------           command .... ----------------------------
+
+
+
 void Command::commandHandler(Client* C)
 {
     _arg = C->getArguments();
     std::string cmd = C->getCommand();
     std::map<std::string, FUNC>::iterator it = _commands.begin();
 
-    if (cmd != "PASS" && C->getPASS().empty())
-        C->reply(ERR_UNKNOWNCOMMAND(C->getNICK(), C->getCommand()));
-    std::cout<<"111111111111111"<<std::endl;
     for( ; it != _commands.end(); ++it)
     {
         if (it->first == cmd)
         {
-            std::cout<<"4444"<<"["<<cmd<<"]"<<"   {"<<it->first<<"}"<<std::endl;
-            (this->*_commands[cmd])(C);
+            (this->*_commands[it->first])(C);
             return ;
         }
     }
-    std::cout<<"222222222222222"<<std::endl;
     C->reply(ERR_UNKNOWNCOMMAND(C->getNICK(), C->getCommand()));
 }
 
@@ -64,51 +81,6 @@ void Command::commandHandler(Client* C)
 //     }
 //     return false ;
 // }
-
-
-
-
-bool Command::nickIsCorrect(std::string buffer)  // // must by update
-{
-    std::string notAllowed = " ,*?!@$:#.";
-    std::size_t pos = buffer.find_first_of(notAllowed);
-    if (pos != std::string::npos)
-    {
-        return false;
-    }
-    return true;
-}
-
-
-void Command::commandNICK(Client* C)
-{
-    std::cout<<"3333333333333"<<std::endl;
-    // if (_arg.empty())
-    // {
-    //     C->reply(ERR_NONICKNAMEGIVEN(C->getNICK()));
-    //     return ;
-    // }
-    // if (!C->getNICK().empty())
-    // {
-    //     C->reply(ERR_ALREADYREGISTERED(C->getNICK()));
-    //     return ;
-    // }
-    // std::string nick = _arg[0];
-    // if (!nickIsCorrect(nick))
-    // {
-    //     C->reply(ERR_ERRONEUSNICKNAME(C->getNICK(), nick));
-    //     return ;
-    // }
-    // Client* client_avel = _server->getClient(nick);
-    // if (client_avel && client_avel != C)
-    // {
-    //     C->reply(ERR_NICKNAMEINUSE(C->getNICK(), nick));
-    //     return ;
-    // }
-    // C->setNICK(nick);
-    C->setRegistered();
-    // _server->setToMaps(C);
-}
 
 void Command::commandPASS(Client* C)
 {
@@ -137,3 +109,37 @@ void Command::commandPASS(Client* C)
     }
     C->setPASS(password);
 }
+
+void Command::commandNICK(Client* C)
+{
+    if (!C->getPASS().empty())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        return ;
+    }
+
+    if (_arg.empty())
+    {
+        C->reply(ERR_NONICKNAMEGIVEN(C->getNICK()));
+        return ;
+    }
+
+    std::string nick = _arg[0];
+    if (!nickIsCorrect(nick))
+    {
+        C->reply(ERR_ERRONEUSNICKNAME(C->getNICK(), nick));
+        return ;
+    }
+
+    Client* client = _server->getClient(nick);
+    if (client && client != C)
+    {
+        C->reply(ERR_NICKNAMEINUSE(C->getNICK(), nick));
+        return ;
+    }
+
+    _server->updateNickMap(C, nick);
+    C->setNICK(nick);
+    C->checkForRegistered();
+}
+

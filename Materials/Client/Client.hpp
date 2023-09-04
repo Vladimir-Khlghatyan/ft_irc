@@ -27,16 +27,16 @@ class Client
         std::vector <std::string> getArguments(void);
 
         void setInputBuffer(const char *s, int len);
-        void setRegistered(void);
         void setNICK(std::string nick);
         void setUSER(std::string user);
         void setPASS(std::string pass);
         void setArguments(void);
 
         void splitBufferToList(void);
+        void checkForRegistered(void);
         bool isRegistered(void);
+    
         void sending(const std::string& massage);
-
         void reply(const std::string& reply);
 
     private:
