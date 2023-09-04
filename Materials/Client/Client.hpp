@@ -17,6 +17,7 @@ class Client
         Client();
         Client(int fd, struct sockaddr_in client_addr);
 
+        int getFd(void);
         std::string getInputBuffer(void);
         std::string getNick(void);
         std::string getPass(void);
