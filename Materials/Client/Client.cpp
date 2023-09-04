@@ -156,8 +156,16 @@ void Client::setRegistered(void)
 }
 
 
+
+
+
+
+
+
 bool Client::isRegistered(void)
 {
+int x;
+x= 10;
     return _registered;
 }
 
