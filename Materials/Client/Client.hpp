@@ -11,6 +11,9 @@
 #include <list>
 #include <sstream>
 #include "../irc_defs.hpp"
+#include "../Channel/Channel.hpp"
+
+class Channel;
 
 class Client
 {
@@ -36,6 +39,8 @@ class Client
         void splitBufferToList(void);
         void checkForRegistered(void);
         bool isRegistered(void);
+        void leavingForChannels(Channel* channel, int mode);
+        void joinToChannel(Channel *chanel);
     
         void sending(const std::string& massage);
         void reply(const std::string& reply);
@@ -53,6 +58,7 @@ class Client
         std::string _command;
         std::vector <std::string> _arguments;
         std::list <std::string> _List;
+        std::vector<Channel*> _channels;
         
         bool        _registered;   // registration level must be 3 (password, nickname and username)
         int         _passTryCount; // max 3 

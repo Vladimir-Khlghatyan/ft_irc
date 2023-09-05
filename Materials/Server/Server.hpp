@@ -13,12 +13,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <map>
+#include <set>
 #include <utility> // for make_pair
 // #include <netdb.h> // for f
 #include <netinet/in.h>
 #include <stdlib.h>
 #include "../Client/Client.hpp"
 #include "../Command/Command.hpp"
+#include "../Channel/Channel.hpp"
 
 class Command;
 
@@ -36,6 +38,9 @@ class Server
         void managClient(std::map<int, Client*>::iterator it);
         bool correctPassword(int fdClient);
         void updateNickMap(Client* C, std::string &nick);
+        void checkForCloseCannel(void);
+        Channel* getChannel(std::string &name);
+        Channel *createChannel(const std::string &name, const std::string &pass);
 
         std::string getPASS(void);
         Client* getClient(const std::string& nickname);
@@ -63,6 +68,7 @@ class Server
         std::map<int, Client*>      _Clients;   // fd : client
         std::map<std::string, int>  _nickname;  // nick : fd
         Command*                    _command;
+        std::set<Channel*>         _channels;
 };
 
 bool argsAreValid(std::string port, std::string password);

@@ -19,6 +19,11 @@ std::string Channel::getKey(void)
     return _key;
 }
 
+std::string Channel::getChannelName(void)
+{
+    return _channelName;
+}
+
 void Channel::joinClient(Client* C)
 {
     _clients.push_back(C);
@@ -34,6 +39,7 @@ void Channel::kickClient(Client* C, const std::string& reason)
 {
     for(size_t i = 0; i < _clients.size(); ++i)
         this->sendMessage(_clients[i]->getFd(), RPL_KICK(_admin->getPrefix(), _channelName, C->getNICK(), reason));
+        // _client[i]->sending(RPL_KICK(_admin->getPrefix(), _channelName, C->getNICK(), reason));
 
     std::vector<Client*>::iterator it = std::find(_clients.begin(), _clients.end(), C);
     _clients.erase(it);
@@ -88,3 +94,21 @@ void Channel::setAdmin(void)
     for(size_t i = 0; i < _clients.size(); ++i)
             this->nameReply(_clients[i]);
 }
+
+
+void Channel::part(Client *C)
+{
+    for(size_t i = 0; i < _clients.size(); ++i)
+        this->sendMessage(_clients[i]->getFd(), RPL_PART(C->getPrefix(), _channelName));
+
+    std::vector<Client*>::iterator it = std::find(_clients.begin(), _clients.end(), C);
+    _clients.erase(it);
+    this->setAdmin();
+}
+
+bool Channel::emptyClients(void)
+{
+    return _clients.empty();
+}
+
+

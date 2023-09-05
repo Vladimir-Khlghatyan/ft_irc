@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <string>
 #include "../Client/Client.hpp"
 #include "../Server/Server.hpp"
 #include "../irc_defs.hpp"
@@ -23,9 +24,10 @@ class Command
         void setPass(std::string password);
         std::string getPass(void);
         bool passwordIsCorrect(Client* C);
-        //---------------------------------------------   check     ---
+        //---------------------------------------------   utils     ---
 
         bool nickIsCorrect(std::string buffer);
+        std::map<std::string, std::string> stringToMap(std::string &keys, std::string &values);
 
         //---------------------------------------------   commands  ---
         void commandHandler(Client* C);
@@ -36,8 +38,8 @@ class Command
         void CommandPING(Client *C);//3
         void CommandPONG(Client *C);//4
         void CommandCAP(Client *C); //5
-        // void Command::CommandJOIN(Client *C);
-        // void commandPRIVMSG(Client *C);
+        void CommandJOIN(Client *C);//6
+        void commandPRIVMSG(Client *C);//7
     private:
         std::string _password;
         std::map<std::string, FUNC> _commands;

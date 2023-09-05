@@ -5,17 +5,18 @@ Command::Command(Server *server) : _server(server)
 {
     FUNC f[] = {&Command::commandPASS, &Command::commandNICK,   //0,1
                  &Command::commandUSER, &Command::CommandPING,  //2,3
-                 &Command::CommandPONG, &Command::CommandCAP};  //4,5
-                //\, &Command::commandPRIVMSG};
+                 &Command::CommandPONG, &Command::CommandCAP,   //4,5
+                 &Command::CommandJOIN, &Command::commandPRIVMSG};//6,7
 
     // _commands.insert(std::make_pair("", f[]));
-    // _commands.insert(std::make_pair("PRIVMSG", f[]));
     _commands.insert(std::make_pair("PASS", f[0]));
     _commands.insert(std::make_pair("NICK", f[1]));
     _commands.insert(std::make_pair("USER", f[2]));
     _commands.insert(std::make_pair("PING", f[3]));
     _commands.insert(std::make_pair("PONG", f[4]));
     _commands.insert(std::make_pair("CAP",  f[5]));
+    _commands.insert(std::make_pair("JOIN",  f[6]));
+    _commands.insert(std::make_pair("PRIVMSG", f[7]));
 
 }
 
@@ -35,7 +36,7 @@ std::string Command::getPass(void)
 }
 
 
-//------------------------------------    utils command    ---------------------------
+//------------------------------------    utils     ---------------------------
 
 
 
@@ -48,6 +49,44 @@ bool Command::nickIsCorrect(std::string buffer)  // // must by update
         return false;
     }
     return true;
+}
+
+
+std::map<std::string, std::string> Command::stringToMap(std::string &keys, std::string &values)
+{
+    std::map<std::string, std::string> result;
+
+    std::vector <std::string> key;
+    std::vector <std::string> value;
+    keys += ',';
+    values += ',';
+    size_t start = 0;
+    size_t index = keys.find(',', start);
+    while(index != std::string::npos)
+    {
+        key.push_back(keys.substr(start, index - start));
+        start = index + 1;
+        index = keys.find(',', start);
+    }
+
+    start = 0;
+    index = values.find(',', start);
+    while(index != std::string::npos)
+    {
+        value.push_back(values.substr(start, index - start));
+        start = index + 1;
+        index = values.find(',', start);
+    }
+    start = 0;
+    index =  key.size();
+    for( ; start < index; ++start)
+    {
+        if (!key[start].empty())
+        {
+            result[key[start]] = start >= value.size() ? "" : value[start];
+        }
+    }
+    return result;
 }
 
 
@@ -150,7 +189,7 @@ void Command::commandUSER(Client *C)
     C->checkForRegistered();
 }
 
-/*
+
 
 void Command::commandPRIVMSG(Client *C)
 {
@@ -227,7 +266,7 @@ void Command::commandPRIVMSG(Client *C)
         i++;
     }
 }
-*/
+
 
 void Command::CommandCAP(Client *C)
 {
@@ -244,6 +283,7 @@ void Command::CommandPING(Client *C)
     C->sending(RPL_PING(C->getPrefix(), _arg[0]));
 }
 
+
 void Command::CommandPONG(Client *C)
 {
     if (_arg.empty())
@@ -254,44 +294,56 @@ void Command::CommandPONG(Client *C)
     C->sending(RPL_PING(C->getPrefix(), _arg[0]));
 }
 
-// void Command::CommandJOIN(Client *C)
-// {
-//     if (!C->isRegistered())
-//     {
-//         C->reply(ERR_NOTREGISTERED(C->getNICK()));
-//         return ;
-//     }
-//     if (_arg.empty())
-//     {
-//         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "JOIN"));
-//         return ;
-//     }
-//     if (_arg.size() == 1 && _arg[0] == "0")
-//     {
-//         C->leaveChannel(0);
-//         return ;
-//     }
-//     string channel_name = arguments[0];
-//     string password = arguments.size() > 1 ? arguments[1] : "";
-//     map<string, string> ch = strTransMap(channel_name, password);
-//     for (map<string, string>::iterator it = ch.begin(); it != ch.end(); ++it) {
-//         channel_name = it->first;
-//         password = it->second;
-//         if (channel_name[0] != '#' && channel_name[0] != '&')
-//         {
-//             client->reply(ERR_BADCHANMASK(client->getNick(), channel_name));
-//             return ;
-//         }
-//         Channel* channel = _server->getChannel(channel_name);
-//         if (!channel)
-//             channel = _server->addChannel(channel_name, password);
-//         else if (channel->usersSize() == 0)
-//             channel->setKey(password);
-//         if (channel->getKey() != "" && channel->getKey() != password)
-//         {
-//             client->reply(ERR_BADCHANNELKEY(client->getNick(), channel_name));
-//             return ;
-//         }
-//         client->joinChannel(channel);
-//     }
-// }
+void Command::CommandJOIN(Client *C)
+{
+    if (!C->isRegistered())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        DEBUGGER();
+        return ;
+    }
+    if (_arg.empty())
+    {
+        C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "JOIN"));
+        DEBUGGER();
+        return ;
+    }
+    if (_arg[0] == "0")
+    {
+        C->leavingForChannels(NULL, 0);
+        _server->checkForCloseCannel();
+        DEBUGGER();
+        return ;
+    }
+
+    DEBUGGER();
+    std::string chanelName = _arg[0];
+    std::string pass = _arg.size() > 1 ? _arg[1] : "";
+
+    std::map<std::string, std::string> ch = stringToMap(chanelName, pass);
+    for (std::map<std::string, std::string>::iterator it = ch.begin(); it != ch.end(); ++it) {
+        chanelName = it->first;
+DEBUGGER();
+        pass = it->second;
+        if (chanelName[0] != '#' && chanelName[0] != '&')
+        {
+            C->reply(ERR_BADCHANMASK(C->getNICK(), chanelName));
+            DEBUGGER();
+            return ;
+        }
+DEBUGGER();
+        Channel* channel = _server->getChannel(chanelName);
+        if (!channel)
+            channel = _server->createChannel(chanelName, pass);
+
+DEBUGGER();
+        if (/*channel->getKey() != "" && */channel->getKey() != pass)
+        {
+            C->reply(ERR_BADCHANNELKEY(C->getNICK(), chanelName));
+            DEBUGGER();
+            return ;
+        }
+        C->joinToChannel(channel);
+DEBUGGER();
+    }
+}

@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include "../Client/Client.hpp"
+#include "../Channel/Channel.hpp"
 #include "../irc_defs.hpp"
 
 class Client;
@@ -18,6 +19,7 @@ class Channel
         void setAdmin(void);
 
         std::string getKey(void);
+        std::string getChannelName(void);
 
         void joinClient(Client* C);
         void kickClient(Client* C, const std::string& reason);
@@ -25,6 +27,8 @@ class Channel
         bool isAdmin(Client* C);
         void sendMessage(int fd, std::string message);
         void nameReply(Client *C);
+        void part(Client *C);
+        bool emptyClients(void);
     
     
     private:

@@ -282,3 +282,46 @@ void Server::updateNickMap(Client* C, std::string &nick)  //   all maps add Clie
         _nickname.erase(C->getNICK());
     _nickname[nick] = C->getFd();
 }
+
+
+void Server::checkForCloseCannel(void)
+{
+    std::set<Channel*>::iterator it = _channels.begin();
+    for ( ; it != _channels.end(); ++it)
+    {
+        if ((*it)->emptyClients())
+        {
+            _channels.erase((*it));
+            delete *it;
+        }
+    }
+}
+
+
+//----------------------------------------------      get  
+
+
+
+Channel* Server::getChannel(std::string &name)
+{
+    std::set<Channel*>::iterator it = _channels.begin();
+    for( ;it  != _channels.end(); ++it)
+    {
+        if ((*it)->getChannelName() == name)
+        {
+            return (*it);
+        }
+    }
+    return NULL;
+}
+
+
+//-----------------------------------------------------
+
+
+Channel *Server::createChannel(const std::string &name, const std::string &pass)
+{
+    Channel *chan = new Channel(name, pass);
+    _channels.insert(chan);
+    return chan;
+}

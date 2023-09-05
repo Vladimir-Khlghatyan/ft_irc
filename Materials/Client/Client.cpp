@@ -152,8 +152,11 @@ void Client::setArguments(void)
 }
 
 
-
-
+void Client::joinToChannel(Channel *chanel)
+{
+    _channels.push_back(chanel);
+    chanel->joinClient(this);
+}
 //-----------------------------------------------------------           Registered            ---------------------------- 
 
 
@@ -214,4 +217,30 @@ void Client::reply(const std::string& reply)
 
     if (send(_fd, buff.c_str(), buff.length(), 0) == -1)
         std::cout << "Error: can't send message to client." << std::endl;
+}
+
+
+//-----------------------------------------------------------              living              --------------------------------------
+
+
+void	Client::leavingForChannels(Channel* channel, int mode)
+{
+    if (mode == 0)
+    {
+        for (std::vector<Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+            (*it)->part(this);
+        _channels.clear();
+    }
+    else
+    {
+        for (std::vector<Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+        {
+            if (*it == channel)
+            {
+                (*it)->part(this);
+                _channels.erase(it);
+                break;
+            }
+        }
+    }
 }
