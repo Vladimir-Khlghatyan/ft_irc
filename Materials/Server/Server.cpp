@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "../Debugger/debugger.hpp"
 
 Server::Server(const char *port, const char *password)
 {

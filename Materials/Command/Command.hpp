@@ -7,10 +7,7 @@
 #include <map>
 #include "../Client/Client.hpp"
 #include "../Server/Server.hpp"
-
 #include "../irc_defs.hpp"
-
-
 
 class Server;
 class Command;

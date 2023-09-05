@@ -1,7 +1,9 @@
 #include "Server.hpp"
+#include "../Debugger/debugger.hpp"
 
 int main(int argc, char *argv[])
 {
+    DEBUGGER();
     if (argc != 3)
     {
         std::cout << "usage: ./ft_irc [port] [password]" << std::endl;
@@ -12,7 +14,6 @@ int main(int argc, char *argv[])
     // {
     //     return 2;
     // }
-
     try{
         Server s(argv[1], argv[2]);
         s.start();

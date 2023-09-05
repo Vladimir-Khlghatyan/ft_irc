@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include "../Debugger/debugger.hpp"
 
 Client::Client() : _fd(0)
 {

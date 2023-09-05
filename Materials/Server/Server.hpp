@@ -1,8 +1,6 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-#include "../Client/Client.hpp"
-#include "../Command/Command.hpp"
 #include <iostream>
 #include <iterator>
 #include <arpa/inet.h> // Add this header for 'inet_addr'
@@ -19,6 +17,8 @@
 // #include <netdb.h> // for f
 #include <netinet/in.h>
 #include <stdlib.h>
+#include "../Client/Client.hpp"
+#include "../Command/Command.hpp"
 
 class Command;
 

@@ -1,5 +1,5 @@
 #include "Command.hpp"
-
+#include "../Debugger/debugger.hpp"
 
 Command::Command(Server *server) : _server(server)
 {
