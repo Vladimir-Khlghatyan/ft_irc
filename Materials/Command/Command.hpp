@@ -36,6 +36,10 @@ class Command
         void commandNICK(Client* C);
         void commandPASS(Client* C);
         void commandUSER(Client *C);
+        void CommandPING(Client *C);
+        void CommandPONG(Client *C);
+        // void Command::CommandJOIN(Client *C);
+        // void commandPRIVMSG(Client *C);
     private:
         std::string _password;
         std::map<std::string, FUNC> _commands;
