@@ -3,7 +3,6 @@
 
 int main(int argc, char *argv[])
 {
-    DEBUGGER();
     if (argc != 3)
     {
         std::cout << "usage: ./ft_irc [port] [password]" << std::endl;

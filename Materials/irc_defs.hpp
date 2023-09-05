@@ -24,7 +24,7 @@
 #define ERR_NOTREGISTERED(source)               "451 " + source + " :You have not registered"
 #define ERR_NEEDMOREPARAMS(source, command)     "461 " + source + " " + command + " :Not enough parameters"
 #define ERR_ALREADYREGISTERED(source)           "462 " + source + " :You may not reregister"
-#define ERR_PASSWDMISMATCH(source)              "464 " + source + " :Password incorrect"
+#define ERR_PASSWDMISMATCH(source)               source + " :Password incorrect" //464
 #define ERR_BADCHANNELKEY(source, command)      "475 " + source + " " + command + " :Cannot join channel (+k)"
 #define ERR_BADCHANMASK(source, command)        "476 " + source + " " + command + " :Bad Channel Mask"
 #define ERR_CHANOPRIVSNEEDED(source, command)   "482 " + source + " " + command + " :You're not channel operator"

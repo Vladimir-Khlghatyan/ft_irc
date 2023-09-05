@@ -181,8 +181,11 @@ void Client::splitBufferToList(void)
 
 void Client::checkForRegistered(void)
 {
-    if (!_pass.empty() && _user.empty() && _nick.empty())
+    if (!_pass.empty() && !_user.empty() && !_nick.empty())
+    {
         _registered = true;
+        reply(RPL_WELCOME(_nick));
+    }
 }
 
 bool Client::isRegistered(void)

@@ -10,6 +10,7 @@
 #include <vector>
 #include <list>
 #include <sstream>
+#include "../irc_defs.hpp"
 
 class Client
 {

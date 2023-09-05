@@ -91,7 +91,7 @@ void Command::commandPASS(Client* C)
 
     if (password != _server->getPASS())
     {
-        std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+        DEBUGGER();
         C->reply(ERR_PASSWDMISMATCH(C->getNICK()));
         return ;
     }
@@ -100,7 +100,6 @@ void Command::commandPASS(Client* C)
 
 void Command::commandNICK(Client* C)
 {
-    std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
     if (C->getPASS().empty())
     {
         C->reply(ERR_NOTREGISTERED(C->getNICK()));
@@ -137,6 +136,7 @@ void Command::commandUSER(Client *C)
     }
     if (C->isRegistered())
     {
+        DEBUGGER();
         C->reply(ERR_ALREADYREGISTERED(C->getNICK()));
         return ;
     }
@@ -154,7 +154,7 @@ void Command::commandUSER(Client *C)
 
 void Command::commandPRIVMSG(Client *C)
 {
-     std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+     
     if (!C->isRegistered())
     {
         C->reply(ERR_NOTREGISTERED(C->getNICK()));
@@ -169,7 +169,7 @@ void Command::commandPRIVMSG(Client *C)
         C->reply(ERR_NOTEXTTOSEND(C->getNICK()));
         return ;
     }
-     std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+     
     int i = 0;
     std::vector<std::string> targets;
 
@@ -178,24 +178,24 @@ void Command::commandPRIVMSG(Client *C)
         targets.push_back(_arg[i].substr(0, _arg[i].length() - 1));
         ++i;
     }
-     std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+     
     if (!_arg[i].empty())
     {
         targets.push_back(_arg[i]);
         i++;
     }
-     std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+     
     if (_arg[i].empty())
     {
         C->reply(ERR_NOTEXTTOSEND(C->getNICK()));
         return ;
     }
-     std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+     
     std::string message = _arg[i];
     for ( ; i < _arg.size(); ++i)
         message.append(" " + _arg[i]);
-    i = 0
- std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+    i = 0;
+ 
     
     while(targets[i])
     {
