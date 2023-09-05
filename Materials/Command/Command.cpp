@@ -3,16 +3,19 @@
 
 Command::Command(Server *server) : _server(server)
 {
-    FUNC f[] = {&Command::commandPASS, &Command::commandNICK, &Command::commandUSER, &Command::CommandPING, &Command::CommandPONG};
+    FUNC f[] = {&Command::commandPASS, &Command::commandNICK,   //0,1
+                 &Command::commandUSER, &Command::CommandPING,  //2,3
+                 &Command::CommandPONG, &Command::CommandCAP};  //4,5
                 //\, &Command::commandPRIVMSG};
 
     // _commands.insert(std::make_pair("", f[]));
+    // _commands.insert(std::make_pair("PRIVMSG", f[]));
     _commands.insert(std::make_pair("PASS", f[0]));
     _commands.insert(std::make_pair("NICK", f[1]));
     _commands.insert(std::make_pair("USER", f[2]));
     _commands.insert(std::make_pair("PING", f[3]));
     _commands.insert(std::make_pair("PONG", f[4]));
-    // _commands.insert(std::make_pair("PRIVMSG", f[5]));
+    _commands.insert(std::make_pair("CAP",  f[5]));
 
 }
 
@@ -58,7 +61,7 @@ void Command::commandHandler(Client* C)
     _arg = C->getArguments();
     std::string cmd = C->getCommand();
     std::map<std::string, FUNC>::iterator it = _commands.begin();
-
+std::cout<<"command{"<<C->getCommand()<<"}"<<std::endl;
     for( ; it != _commands.end(); ++it)
     {
         if (it->first == cmd)
@@ -84,15 +87,11 @@ void Command::commandPASS(Client* C)
         return ;
     }
 
-    std::string password;
-
-    if (_arg[0][0] == ':')
-        password = _arg[0].substr(1);
-    else
-        password = _arg[0];
+    std::string password = _arg[0];
 
     if (password != _server->getPASS())
     {
+        std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
         C->reply(ERR_PASSWDMISMATCH(C->getNICK()));
         return ;
     }
@@ -229,6 +228,11 @@ void Command::commandPRIVMSG(Client *C)
     }
 }
 */
+
+void Command::CommandCAP(Client *C)
+{
+    C->isRegistered();
+}
 
 void Command::CommandPING(Client *C)
 {
