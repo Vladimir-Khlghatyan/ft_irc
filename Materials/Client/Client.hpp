@@ -44,7 +44,8 @@ class Client
         void sending(const std::string& massage);
         void reply(const std::string& reply);
 
-        std::string _inputBuffer;
+        std::string _tmpBuffer;
+        
     private:
         int _fd;
         std::string _port;
