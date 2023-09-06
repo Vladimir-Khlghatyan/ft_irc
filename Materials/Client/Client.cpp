@@ -41,6 +41,11 @@ std::string Client::getNICK(void)
     return _nick;
 }
 
+std::string Client::getUSER(void)
+{
+    return _user;
+}
+
 std::string Client::getCommand(void)
 {
     return _command;

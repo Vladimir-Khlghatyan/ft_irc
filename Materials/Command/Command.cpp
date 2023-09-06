@@ -3,10 +3,12 @@
 
 Command::Command(Server *server) : _server(server)
 {
-    FUNC f[] = {&Command::commandPASS, &Command::commandNICK,   //0,1
-                 &Command::commandUSER, &Command::CommandPING,  //2,3
-                 &Command::CommandPONG, &Command::CommandCAP,   //4,5
-                 &Command::CommandJOIN, &Command::commandPRIVMSG};//6,7
+    FUNC f[] = {&Command::commandPASS, &Command::commandNICK,    //0,1
+                 &Command::commandUSER, &Command::CommandPING,   //2,3
+                 &Command::CommandPONG, &Command::CommandCAP,    //4,5
+                 &Command::CommandJOIN, &Command::commandPRIVMSG,//6,7
+                 &Command::commandKICK, &Command::commandINVITE, //8,9
+                 &Command::commandMODE};                         //10
 
     // _commands.insert(std::make_pair("", f[]));
     _commands.insert(std::make_pair("PASS", f[0]));
@@ -17,6 +19,9 @@ Command::Command(Server *server) : _server(server)
     _commands.insert(std::make_pair("CAP",  f[5]));
     _commands.insert(std::make_pair("JOIN",  f[6]));
     _commands.insert(std::make_pair("PRIVMSG", f[7]));
+    _commands.insert(std::make_pair("KICK", f[8]));
+    _commands.insert(std::make_pair("INVITE", f[9]));
+    _commands.insert(std::make_pair("MODE", f[10]));
 
 }
 
@@ -86,6 +91,22 @@ std::map<std::string, std::string> Command::stringToMap(std::string &keys, std::
         }
     }
     return result;
+}
+
+std::vector<std::string> Command::stringSplitToVector(std::string keys)
+{
+    std::vector<std::string> targets;
+
+    keys += ',';
+    size_t start = 0;
+    size_t index = keys.find(',', start);
+    while(index != std::string::npos)
+    {
+        targets.push_back(keys.substr(start, index - start));
+        start = index + 1;
+        index = keys.find(',', start);
+    }
+    return targets;
 }
 
 //-----------------------------------           command .... ----------------------------
@@ -329,5 +350,158 @@ DEBUGGER();
         }
         C->joinToChannel(channel);
 DEBUGGER();
+    }
+}
+
+
+void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
+{
+    if (!C->isRegistered())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        DEBUGGER();
+        return ;
+    }
+    if (_arg.empty() || _arg.size() < 2)
+    {
+        C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "KICK"));
+        return ;
+    }
+    std::map<std::string, std::string> target = stringToMap(_arg[0], _arg[1]);
+    std::map<std::string, std::string>::iterator it = target.begin();
+    for( ; it != target.end(); ++it)
+    {
+        std::string channelName = it->first;
+        std::string userName = it->second;
+        // std::string nickName = it->second;
+
+        Channel* channel = _server->getChannel(channelName);
+        Client* user = channel->getByUserName(userName);//
+        // Client* user = channel->getClient(nickName);
+
+        if (!channel)
+        {
+            C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName));
+            return ;
+        }
+        else if (!channel->isInChannel(C))
+        {
+            C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+            return ;
+        }
+        if (!(channel->isAdmin(C)))
+        {
+            C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+            return ;
+        }
+
+        if (!user)
+        {
+            C->reply(ERR_USERNOTINCHANNEL(C->getNICK(), userName, channelName));
+            return ;
+        }
+        std::string reason = "No reason specified.";
+
+        for (size_t i = 2; i < _arg.size(); ++i)
+            reason.append(" " + _arg[i]);
+        channel->kickClient(user, reason);
+        user->leavingForChannels(channel, 1);
+    }
+}
+
+
+void Command::commandINVITE(Client *C)
+{
+    if (!C->isRegistered())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        DEBUGGER();
+        return ;
+    }
+    if (_arg.empty() || _arg.size() < 2)
+    {
+        C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "WHO"));
+        return ;
+    }
+    std::string nickName = _arg[0];
+    std::string channelName = _arg[1];
+
+    Client* user = _server->getClient(nickName);
+    Channel* channel = _server->getChannel(channelName);
+
+    if (!user)
+    {
+        C->reply(ERR_NOSUCHNICK(C->getNICK(), nickName));
+        return ;
+    }
+    if (!channel)
+    {
+        C->reply(ERR_NOSUCHNICK(C->getNICK(), channelName));
+        return ;
+    }
+    if (!channel->isInChannel(C))
+    {
+        C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+        return ;
+    }
+    if (channel->isInChannel(user))
+    {
+        C->reply(ERR_USERONCHANNEL(C->getNICK(), nickName, channelName));
+        return ;
+    }
+    user->sending(RPL_INVITE(C->getPrefix(), nickName, channelName));
+    C->reply(RPL_INVITING(C->getNICK(), nickName, channelName));
+}
+
+
+void Command::commandMODE(Client *C)
+{
+    if (!C->isRegistered())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        DEBUGGER();
+        return ;
+    }
+    if (_arg.empty())
+    {
+        C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "MODE"));
+        DEBUGGER();
+        return ;
+    }
+    std::string nicklName = _arg[0];
+
+    Channel* channel = _server->getChannel(nicklName);
+    if (!channel)
+    {
+        C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), nicklName));
+        return ;
+    }
+    else if (!channel->isInChannel(C))
+    {
+        C->reply(ERR_NOTONCHANNEL(C->getNICK(), nicklName));
+        return ;
+    }
+    if (_arg.size() == 1)
+    {
+        if (!(channel->getKey() == ""))
+            C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + channel->getKey()));
+        return ;
+    }
+    std::string mode = _arg[1];
+    if (_arg.size() > 2)
+    {
+        std::string key = _arg[2];
+        if (!(channel->isAdmin(C)))
+            C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), nicklName));
+        else if (mode == "+k")
+        {
+            C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + key));
+            channel->setKey(key);
+        }
+        else if (mode == "-k" && channel->getKey() == key)
+        {
+            C->sending(RPL_MODE(C->getPrefix(), nicklName, "-k "));
+            channel->setKey("");
+        }
     }
 }

@@ -24,6 +24,7 @@ class Command
         void setPass(std::string password);
         std::string getPass(void);
         bool passwordIsCorrect(Client* C);
+        std::vector<std::string> stringSplitToVector(std::string);
         //---------------------------------------------   utils     ---
 
         bool nickIsCorrect(std::string buffer);
@@ -39,7 +40,10 @@ class Command
         void CommandPONG(Client *C);    //4
         void CommandCAP(Client *C);     //5
         void CommandJOIN(Client *C);    //6
-        void commandPRIVMSG(Client *C);//7
+        void commandPRIVMSG(Client *C); //7
+        void commandKICK(Client *C);    //8
+        void commandINVITE(Client *C);   //9
+        void commandMODE(Client *C);      //10
     private:
         std::string _password;
         std::map<std::string, FUNC> _commands;

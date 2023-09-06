@@ -25,6 +25,7 @@ class Client
         std::string getInputBuffer(void);
         std::string getNICK(void);
         std::string getPASS(void);
+        std::string getUSER(void);
         std::string getCommand(void);
         std::string	getPrefix(void);
         std::vector <std::string> getArguments(void);
@@ -56,6 +57,7 @@ class Client
         std::string _realname;
         std::string _hostname;
         std::string _command;
+        std::string _inputBuffer;
         std::vector <std::string> _arguments;
         std::list <std::string> _List;
         std::vector<Channel*> _channels;

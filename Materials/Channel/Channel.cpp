@@ -53,6 +53,17 @@ bool Channel::isInChannel(Client* C)
     return true;
 }
 
+Client *Channel::getByUserName(std::string user)
+{
+    std::vector<Client*>::iterator it = _clients.begin();
+    for( ; it != _clients.end(); ++it)
+    {
+        if ((*it)->getUSER() == user)
+            return (*it);
+    }
+    return NULL;
+}
+
 bool Channel::isAdmin(Client* C)
 {
     if (!isInChannel(C))
