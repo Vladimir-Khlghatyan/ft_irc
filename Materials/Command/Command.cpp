@@ -205,18 +205,18 @@ void Command::commandPRIVMSG(Client *C)
     size_t i = -1;
     std::vector<std::string> targets;
 
-    while(!_arg[++i].empty() && _arg[i][_arg[i].length() - 1] == ',')
-        targets.push_back(_arg[i].substr(0, _arg[i].length() - 1));
-     
-    if (!_arg[i].empty())
-        targets.push_back(_arg[i++]);
-     
-    if (_arg[i].empty())
+    std::string keys = _arg[0];
+
+    keys += ',';
+    size_t start = 0;
+    size_t index = keys.find(',', start);
+    while(index != std::string::npos)
     {
-        C->reply(ERR_NOTEXTTOSEND(C->getNICK()));
-        return ;
+        targets.push_back(keys.substr(start, index - start));
+        start = index + 1;
+        index = keys.find(',', start);
     }
-     
+
     std::string message = _arg[i++];
     for ( ; i < _arg.size(); ++i)
         message.append(" " + _arg[i]);

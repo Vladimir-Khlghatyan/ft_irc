@@ -44,9 +44,9 @@ class Client
         void sending(const std::string& massage);
         void reply(const std::string& reply);
 
+        std::string _inputBuffer;
     private:
         int _fd;
-        std::string _inputBuffer;
         std::string _port;
         struct sockaddr_in _client_addr;
         std::string _pass; // Command: PASS   Parameters: <password>
