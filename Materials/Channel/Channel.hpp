@@ -26,6 +26,7 @@ class Channel
         bool isInChannel(Client* C);
         bool isAdmin(Client* C);
         void sendMessage(int fd, std::string message);
+        void sending(Client* C, const std::string& msg, const std::string& cmd);
         void nameReply(Client *C);
         void part(Client *C);
         bool emptyClients(void);

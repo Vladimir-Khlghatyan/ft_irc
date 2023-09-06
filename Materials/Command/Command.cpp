@@ -51,7 +51,6 @@ bool Command::nickIsCorrect(std::string buffer)  // // must by update
     return true;
 }
 
-
 std::map<std::string, std::string> Command::stringToMap(std::string &keys, std::string &values)
 {
     std::map<std::string, std::string> result;
@@ -89,11 +88,7 @@ std::map<std::string, std::string> Command::stringToMap(std::string &keys, std::
     return result;
 }
 
-
-
 //-----------------------------------           command .... ----------------------------
-
-
 
 void Command::commandHandler(Client* C)
 {
@@ -189,8 +184,6 @@ void Command::commandUSER(Client *C)
     C->checkForRegistered();
 }
 
-
-
 void Command::commandPRIVMSG(Client *C)
 {
      
@@ -209,20 +202,14 @@ void Command::commandPRIVMSG(Client *C)
         return ;
     }
      
-    int i = 0;
+    size_t i = -1;
     std::vector<std::string> targets;
 
-    while(!_arg[i].empty() && _arg[i][_arg[i].length() - 1] == ','); 
-    {
+    while(!_arg[++i].empty() && _arg[i][_arg[i].length() - 1] == ',')
         targets.push_back(_arg[i].substr(0, _arg[i].length() - 1));
-        ++i;
-    }
      
     if (!_arg[i].empty())
-    {
-        targets.push_back(_arg[i]);
-        i++;
-    }
+        targets.push_back(_arg[i++]);
      
     if (_arg[i].empty())
     {
@@ -230,13 +217,11 @@ void Command::commandPRIVMSG(Client *C)
         return ;
     }
      
-    std::string message = _arg[i];
+    std::string message = _arg[i++];
     for ( ; i < _arg.size(); ++i)
         message.append(" " + _arg[i]);
-    i = 0;
- 
     
-    while(targets[i])
+    for (size_t i = 0; i < targets.size(); ++i)    
     {
         if (targets[i][0] == '#' || targets[i][0] == '&')
         {
@@ -246,7 +231,7 @@ void Command::commandPRIVMSG(Client *C)
                 C->reply(ERR_NOSUCHNICK(C->getNICK(), targets[i]));
                 return ;
             }
-            if (!channel->isAvelabel(C))
+            if (!channel->isInChannel(C))
             {
                 C->reply(ERR_CANNOTSENDTOCHAN(C->getNICK(), targets[i]));
                 return ;
@@ -255,22 +240,21 @@ void Command::commandPRIVMSG(Client *C)
         }
         else
         {
-            Client* user = _server->getClient(targets[i]);
-            if (!user)
+            Client* client = _server->getClient(targets[i]);
+            if (!client)
             {
                 C->reply(ERR_NOSUCHNICK(C->getNICK(), targets[i]));
                 return ;
             }
-            user->sending(RPL_MSG(C->getPrefix(), "PRIVMSG", targets[i], message));
+            client->sending(RPL_MSG(C->getPrefix(), "PRIVMSG", targets[i], message));
         }
-        i++;
     }
 }
 
 
 void Command::CommandCAP(Client *C)
 {
-    C->isRegistered();
+    (void)*C;
 }
 
 void Command::CommandPING(Client *C)

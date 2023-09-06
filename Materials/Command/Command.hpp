@@ -32,13 +32,13 @@ class Command
         //---------------------------------------------   commands  ---
         void commandHandler(Client* C);
         
-        void commandNICK(Client* C);//0
-        void commandPASS(Client* C);//1
-        void commandUSER(Client *C);//2
-        void CommandPING(Client *C);//3
-        void CommandPONG(Client *C);//4
-        void CommandCAP(Client *C); //5
-        void CommandJOIN(Client *C);//6
+        void commandNICK(Client* C);    //0
+        void commandPASS(Client* C);    //1
+        void commandUSER(Client *C);    //2
+        void CommandPING(Client *C);    //3
+        void CommandPONG(Client *C);    //4
+        void CommandCAP(Client *C);     //5
+        void CommandJOIN(Client *C);    //6
         void commandPRIVMSG(Client *C);//7
     private:
         std::string _password;

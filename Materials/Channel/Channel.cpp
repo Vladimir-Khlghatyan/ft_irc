@@ -67,6 +67,13 @@ void Channel::sendMessage(int fd, std::string message)
         std::cout << "Error: can't send message to client." << std::endl;
 }
 
+void Channel::sending(Client* C, const std::string& msg, const std::string& cmd)
+{
+    for (size_t i = 1; i < _clients.size(); ++i)
+        if (_clients[i] != C)
+            _clients[i]->sending(RPL_MSG(C->getPrefix(), cmd, _channelName, msg));
+}
+
 void Channel::nameReply(Client *C)
 {
     for (size_t i = 0; i < _clients.size(); ++i)
