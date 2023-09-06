@@ -25,12 +25,11 @@ class Client
         std::string getInputBuffer(void);
         std::string getNICK(void);
         std::string getPASS(void);
-        int getSizeBuff(void);
         std::string getCommand(void);
         std::string	getPrefix(void);
         std::vector <std::string> getArguments(void);
 
-        void setInputBuffer(const char *s, int len);
+        void setInputBuffer(const std::string &inputBuffer);
         void setNICK(std::string nick);
         void setUSER(std::string &user, std::string &realname);
         void setPASS(std::string pass);
@@ -62,7 +61,6 @@ class Client
         
         bool        _registered;   // registration level must be 3 (password, nickname and username)
         int         _passTryCount; // max 3 
-        int         _sizeBuff;
 };
 
 #endif

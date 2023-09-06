@@ -150,7 +150,7 @@ void    Server::ReadingforDescriptor(void)
     std::map<int, Client*>::iterator it = ++this->_Clients.begin(); // [0]index input _server_fd
     int sizeBuff = 0;
     char buffer[1025] = {0};
-
+    
     for( ;it != this->_Clients.end(); ++it) 
     {
         if (FD_ISSET(it->first, &_READ_fds))
@@ -175,10 +175,29 @@ void    Server::ReadingforDescriptor(void)
             {
                 // we need a parsing string geved                                  --------------------!!!!!!!!!
                 //:Name COMMAND parameter list
-                // std::cout<< "[++" << it->first <<"++]" << buffer;
-                it->second->setInputBuffer(buffer, sizeBuff);
-                it->second->splitBufferToList();
-                it->second->setArguments();
+                // std::cout<< "BUFFER[" << it->first <<"]" << buffer;
+                // std::cout<< "BUFFER[" << buffer <<"]" <<std::endl;
+                
+                int i = -1;
+                while (buffer[++i])
+                {
+                    _currentBuffer += buffer[i];
+                    if (buffer[i] == '\n')
+                    {
+                        it->second->setInputBuffer(_currentBuffer);
+                        it->second->splitBufferToList();
+                        it->second->setArguments();
+                        while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
+                        {
+                            _command->commandHandler(it->second);
+                            it->second->setArguments();
+                        }
+                        _currentBuffer = "";
+                    }
+                }
+
+
+                // it->second->setInputBuffer(fullBuffer);
                 //--------------------------     prints  arguments
                 // while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
                 // {
@@ -194,11 +213,6 @@ void    Server::ReadingforDescriptor(void)
                 //     it->second->setArguments();
                 // }
               
-                while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
-                {
-                    _command->commandHandler(it->second);
-                    it->second->setArguments();
-                }
             }
         }
         if (FD_ISSET(it->first, &_ER_fds))

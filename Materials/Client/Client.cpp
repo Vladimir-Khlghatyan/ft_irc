@@ -5,7 +5,6 @@ Client::Client() : _fd(0)
 {
     _registered = false;
     _passTryCount = 0;
-    _sizeBuff = 0;
 }
 
 Client::Client(int fd, struct sockaddr_in client_addr)
@@ -15,7 +14,6 @@ Client::Client(int fd, struct sockaddr_in client_addr)
 
     _registered = false;
     _passTryCount = 0;
-    _sizeBuff = 0;
 
     // այս մասը պետք է ստուգել, արդյոք hostname-ը ճիշտ է ստացվում
     char hostname[NI_MAXHOST];    
@@ -41,11 +39,6 @@ std::string Client::getInputBuffer(void)
 std::string Client::getNICK(void)
 {
     return _nick;
-}
-
-int Client::getSizeBuff(void)
-{
-    return _sizeBuff;
 }
 
 std::string Client::getCommand(void)
@@ -99,12 +92,9 @@ void Client::setPASS(std::string pass)
     _pass = pass;
 }
 
-void Client::setInputBuffer(const char *s, int len)
+void Client::setInputBuffer(const std::string &inputBuffer)
 {   
-    std::string a(s, len);
-
-    this->_inputBuffer = a.substr(0, len);//for \0
-    _sizeBuff = len;
+    _inputBuffer = inputBuffer;
 }
 
 void Client::setArguments(void)
