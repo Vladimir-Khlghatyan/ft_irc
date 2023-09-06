@@ -181,10 +181,10 @@ void    Server::ReadingforDescriptor(void)
                 int i = -1;
                 while (buffer[++i])
                 {
-                    _currentBuffer += buffer[i];
+                    it->second->_tmpBuffer += buffer[i];
                     if (buffer[i] == '\n')
                     {
-                        it->second->setInputBuffer(_currentBuffer);
+                        it->second->setInputBuffer(it->second->_tmpBuffer);
                         it->second->splitBufferToList();
                         it->second->setArguments();
                         while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
@@ -192,7 +192,7 @@ void    Server::ReadingforDescriptor(void)
                             _command->commandHandler(it->second);
                             it->second->setArguments();
                         }
-                        _currentBuffer = "";
+                        it->second->_tmpBuffer = "";
                     }
                 }
 

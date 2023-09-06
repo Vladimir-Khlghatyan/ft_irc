@@ -69,7 +69,6 @@ class Server
         std::map<std::string, int>  _nickname;  // nick : fd
         Command*                    _command;
         std::set<Channel*>         _channels;
-        std::string                _currentBuffer;
 };
 
 bool argsAreValid(std::string port, std::string password);
