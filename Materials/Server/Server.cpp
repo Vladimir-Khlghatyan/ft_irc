@@ -279,10 +279,15 @@ std::string Server::getPASS(void)
 
 Client* Server::getClient(const std::string& nickname)
 {
+DEBUGGER();
     std::map<std::string, int>::iterator it = _nickname.find(nickname);
+    std::cout<<"NOCK =="<<nickname<<std::endl;
     if (it == _nickname.end())
+    {
+DEBUGGER();
         return NULL;
-
+    }
+DEBUGGER();
     return _Clients.find(it->second)->second;
 }
 
@@ -292,8 +297,10 @@ Client* Server::getClient(const std::string& nickname)
 
 void Server::updateNickMap(Client* C, std::string &nick)  //   all maps add Client
 {
+DEBUGGER();
     if (this->getClient(C->getNICK()))
         _nickname.erase(C->getNICK());
+DEBUGGER();
     _nickname[nick] = C->getFd();
 }
 

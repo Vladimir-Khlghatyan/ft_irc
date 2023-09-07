@@ -30,6 +30,7 @@ class Channel
         void nameReply(Client *C);
         void part(Client *C);
         bool emptyClients(void);
+        bool isOperator(Client *C);
         Client *getClientByNick(std::string nickname);
     
     
@@ -38,6 +39,7 @@ class Channel
     std::string             _key;
 
     std::vector<Client*>    _clients;
+    std::vector<Client*>    _operators;
     Client*                 _admin;
 
 };

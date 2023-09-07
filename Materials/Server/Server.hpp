@@ -54,7 +54,7 @@ class Server
 				char *_s;
 		};
 
-    private:
+    // private:
         struct sockaddr_in          _server_addr;
         std::string                 _password;
         unsigned short              _port;

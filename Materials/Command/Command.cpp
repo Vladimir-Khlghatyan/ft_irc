@@ -177,9 +177,13 @@ void Command::commandNICK(Client* C)
         C->reply(ERR_NICKNAMEINUSE(C->getNICK(), nick));
         return ;
     }
+DEBUGGER();
     _server->updateNickMap(C, nick);
+DEBUGGER();
     C->setNICK(nick);
+DEBUGGER();
     C->checkForRegistered();
+DEBUGGER();
 }
 
 void Command::commandUSER(Client *C)
@@ -394,7 +398,13 @@ void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
             return ;
         }
 
-        if (!(channel->isAdmin(C)))
+        if (!channel->isOperator(C))
+        {
+            C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+            return ;
+        }
+
+        if (!(channel->isAdmin(C)) && channel->isAdmin(client))
         {
             C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
             return ;
@@ -416,6 +426,7 @@ void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
 
 void Command::commandINVITE(Client *C)
 {
+    DEBUGGER();
     if (!C->isRegistered())
     {
         C->reply(ERR_NOTREGISTERED(C->getNICK()));
@@ -425,41 +436,52 @@ void Command::commandINVITE(Client *C)
     if (_arg.empty() || _arg.size() < 2)
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "WHO"));
+        DEBUGGER();
         return ;
     }
     std::string nickName = _arg[0];
     std::string channelName = _arg[1];
 
-    Client* user = _server->getClient(nickName);
-    Channel* channel = _server->getChannel(channelName);
-
-    if (!user)
+    Client* client = _server->getClient(nickName);
+    if (!client)
     {
+        std::cout << "size: " << _server->_nickname.size() << std::endl;
+        DEBUGGER();
         C->reply(ERR_NOSUCHNICK(C->getNICK(), nickName));
         return ;
     }
+
+    Channel* channel = _server->getChannel(channelName);
     if (!channel)
     {
         C->reply(ERR_NOSUCHNICK(C->getNICK(), channelName));
+        DEBUGGER();
         return ;
     }
+
     if (!channel->isInChannel(C))
     {
         C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+        DEBUGGER();
         return ;
     }
-    if (channel->isInChannel(user))
+    if (channel->isInChannel(client))
     {
         C->reply(ERR_USERONCHANNEL(C->getNICK(), nickName, channelName));
+        DEBUGGER();
         return ;
     }
-    user->sending(RPL_INVITE(C->getPrefix(), nickName, channelName));
+
+    client->sending(RPL_INVITE(C->getPrefix(), nickName, channelName));
     C->reply(RPL_INVITING(C->getNICK(), nickName, channelName));
+    channel->joinClient(client);
+    DEBUGGER();
 }
 
 
 void Command::commandMODE(Client *C)
 {
+    DEBUGGER();
     if (!C->isRegistered())
     {
         C->reply(ERR_NOTREGISTERED(C->getNICK()));
@@ -478,22 +500,26 @@ void Command::commandMODE(Client *C)
     if (!channel)
     {
         C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), nicklName));
+        DEBUGGER();
         return ;
     }
     else if (!channel->isInChannel(C))
     {
         C->reply(ERR_NOTONCHANNEL(C->getNICK(), nicklName));
+        DEBUGGER();
         return ;
     }
     if (_arg.size() == 1)
     {
         if (!(channel->getKey() == ""))
             C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + channel->getKey()));
+        DEBUGGER();
         return ;
     }
     std::string mode = _arg[1];
     if (_arg.size() > 2)
     {
+        DEBUGGER();
         std::string key = _arg[2];
         if (!(channel->isAdmin(C)))
             C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), nicklName));

@@ -81,7 +81,7 @@ std::string	Client::getPrefix(void)
 
 void Client::setNICK(std::string nick)
 {
-    std::cout<<"File: [" << __FILE__ << "]   line: "<< __LINE__ << "   func: [" << __func__ << "]" <<std::endl;
+DEBUGGER();
     sending(":" + _nick + " NICK " + nick);
     _nick = nick;
 }

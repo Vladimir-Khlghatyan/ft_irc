@@ -43,6 +43,9 @@ void Channel::kickClient(Client* C, const std::string& reason)
 
     std::vector<Client*>::iterator it = std::find(_clients.begin(), _clients.end(), C);
     _clients.erase(it);
+
+    it = std::find(_operators.begin(), _operators.end(), C);
+    _operators.erase(it);
     this->setAdmin();
 }
 
@@ -69,6 +72,13 @@ bool Channel::isAdmin(Client* C)
     if (!isInChannel(C))
         return false;
     return C == _admin;
+}
+
+bool Channel::isOperator(Client *C)
+{
+    if (std::find(_operators.begin(), _operators.end(), C) == _operators.end())
+        return false;
+    return true;
 }
 
 void Channel::sendMessage(int fd, std::string message)
