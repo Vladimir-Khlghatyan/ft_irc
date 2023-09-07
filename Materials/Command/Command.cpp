@@ -211,23 +211,27 @@ void Command::commandUSER(Client *C)
 
 void Command::commandPRIVMSG(Client *C)
 {
-     
+    DEBUGGER();
     if (!C->isRegistered())
     {
         C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        DEBUGGER();
+        return;
     }
     if (_arg.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "PRIVMSG"));
+        DEBUGGER();
         return ;
     }
     if (_arg.size() < 2)
     {
         C->reply(ERR_NOTEXTTOSEND(C->getNICK()));
+        DEBUGGER();
         return ;
     }
      
-    size_t i = -1;
+    DEBUGGER();
     std::vector<std::string> targets;
 
     std::string keys = _arg[0];
@@ -235,6 +239,7 @@ void Command::commandPRIVMSG(Client *C)
     keys += ',';
     size_t start = 0;
     size_t index = keys.find(',', start);
+    DEBUGGER();
     while(index != std::string::npos)
     {
         targets.push_back(keys.substr(start, index - start));
@@ -242,10 +247,13 @@ void Command::commandPRIVMSG(Client *C)
         index = keys.find(',', start);
     }
 
+    DEBUGGER();
+    size_t i = 1;
     std::string message = _arg[i++];
     for ( ; i < _arg.size(); ++i)
         message.append(" " + _arg[i]);
     
+    DEBUGGER();
     for (size_t i = 0; i < targets.size(); ++i)    
     {
         if (targets[i][0] == '#' || targets[i][0] == '&')
@@ -261,6 +269,7 @@ void Command::commandPRIVMSG(Client *C)
                 C->reply(ERR_CANNOTSENDTOCHAN(C->getNICK(), targets[i]));
                 return ;
             }
+            DEBUGGER();
             channel->sending(C, message, "PRIVMSG");
         }
         else
@@ -271,9 +280,11 @@ void Command::commandPRIVMSG(Client *C)
                 C->reply(ERR_NOSUCHNICK(C->getNICK(), targets[i]));
                 return ;
             }
+            DEBUGGER();
             client->sending(RPL_MSG(C->getPrefix(), "PRIVMSG", targets[i], message));
         }
     }
+    DEBUGGER();
 }
 
 
@@ -332,7 +343,7 @@ void Command::CommandJOIN(Client *C)
     std::map<std::string, std::string> ch = stringToMap(chanelName, pass);
     for (std::map<std::string, std::string>::iterator it = ch.begin(); it != ch.end(); ++it) {
         chanelName = it->first;
-DEBUGGER();
+        DEBUGGER();
         pass = it->second;
         if (chanelName[0] != '#' && chanelName[0] != '&')
         {
@@ -340,12 +351,12 @@ DEBUGGER();
             DEBUGGER();
             return ;
         }
-DEBUGGER();
+        DEBUGGER();
         Channel* channel = _server->getChannel(chanelName);
         if (!channel)
             channel = _server->createChannel(chanelName, pass);
 
-DEBUGGER();
+        DEBUGGER();
         if (/*channel->getKey() != "" && */channel->getKey() != pass)
         {
             C->reply(ERR_BADCHANNELKEY(C->getNICK(), chanelName));
@@ -353,13 +364,14 @@ DEBUGGER();
             return ;
         }
         C->joinToChannel(channel);
-DEBUGGER();
+        DEBUGGER();
     }
 }
 
 
 void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
 {
+    DEBUGGER();
     if (!C->isRegistered())
     {
         C->reply(ERR_NOTREGISTERED(C->getNICK()));
@@ -369,10 +381,14 @@ void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
     if (_arg.empty() || _arg.size() < 2)
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "KICK"));
+        DEBUGGER();
         return ;
     }
+    DEBUGGER();
     std::map<std::string, std::string> target = stringToMap(_arg[0], _arg[1]);
+    DEBUGGER();
     std::map<std::string, std::string>::iterator it = target.begin();
+    DEBUGGER();
     for( ; it != target.end(); ++it)
     {
         std::string channelName = it->first;
@@ -382,6 +398,7 @@ void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
         if (!channel)
         {
             C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName));
+            DEBUGGER();
             return ;
         }
 
@@ -389,6 +406,7 @@ void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
         if (!client)
         {
             C->reply(ERR_USERNOTINCHANNEL(C->getNICK(), nickname, channelName));
+            DEBUGGER();
             return ;
         }
 
@@ -401,25 +419,31 @@ void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
         if (!channel->isOperator(C))
         {
             C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+            DEBUGGER();
             return ;
         }
 
         if (!(channel->isAdmin(C)) && channel->isAdmin(client))
         {
             C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+            DEBUGGER();
             return ;
         }
 
         std::string reason;
         
+        DEBUGGER();
         if (_arg.size() > 2)
             for (size_t i = 2; i < _arg.size(); ++i)
                 reason.append(" " + _arg[i]);
         else
             reason = "No reason specified.";
 
+        DEBUGGER();
         channel->kickClient(client, reason);
+        DEBUGGER();
         client->leavingForChannels(channel);
+        DEBUGGER();
     }
 }
 

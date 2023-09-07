@@ -26,13 +26,17 @@ std::string Channel::getChannelName(void)
 
 void Channel::joinClient(Client* C)
 {
+    DEBUGGER();
     _clients.push_back(C);
 
     for(size_t i = 0; i < _clients.size(); ++i)
         this->sendMessage(_clients[i]->getFd(), RPL_JOIN(C->getPrefix(), _channelName));
 
+    DEBUGGER();
     this->setAdmin();
+    DEBUGGER();
     this->nameReply(C);
+    DEBUGGER();
 }
 
 void Channel::kickClient(Client* C, const std::string& reason)
@@ -42,10 +46,12 @@ void Channel::kickClient(Client* C, const std::string& reason)
         // _client[i]->sending(RPL_KICK(_admin->getPrefix(), _channelName, C->getNICK(), reason));
 
     std::vector<Client*>::iterator it = std::find(_clients.begin(), _clients.end(), C);
-    _clients.erase(it);
+    if (it != _clients.end())
+        _clients.erase(it);
 
     it = std::find(_operators.begin(), _operators.end(), C);
-    _operators.erase(it);
+    if (it != _operators.end())
+        _operators.erase(it);
     this->setAdmin();
 }
 
@@ -90,7 +96,7 @@ void Channel::sendMessage(int fd, std::string message)
 
 void Channel::sending(Client* C, const std::string& msg, const std::string& cmd)
 {
-    for (size_t i = 1; i < _clients.size(); ++i)
+    for (size_t i = 0; i < _clients.size(); ++i)
         if (_clients[i] != C)
             _clients[i]->sending(RPL_MSG(C->getPrefix(), cmd, _channelName, msg));
 }
@@ -111,6 +117,8 @@ void Channel::setAdmin(void)
         return;
 
     _admin = _clients[0];
+    if (std::find(_operators.begin(), _operators.end(), _admin) == _operators.end())
+        _operators.push_back(_admin);    
 
     // sending message to admin
     this->sendMessage(_admin->getFd(), RPL_MSG(_admin->getPrefix(), "", _channelName, "you are the new admin"));

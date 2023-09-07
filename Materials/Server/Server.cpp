@@ -279,15 +279,12 @@ std::string Server::getPASS(void)
 
 Client* Server::getClient(const std::string& nickname)
 {
-DEBUGGER();
     std::map<std::string, int>::iterator it = _nickname.find(nickname);
-    std::cout<<"NOCK =="<<nickname<<std::endl;
     if (it == _nickname.end())
     {
-DEBUGGER();
+        DEBUGGER();
         return NULL;
     }
-DEBUGGER();
     return _Clients.find(it->second)->second;
 }
 

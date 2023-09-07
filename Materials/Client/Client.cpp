@@ -149,8 +149,11 @@ void Client::setArguments(void)
 
 void Client::joinToChannel(Channel *chanel)
 {
+    DEBUGGER();
     _channels.push_back(chanel);
+    DEBUGGER();
     chanel->joinClient(this);
+    DEBUGGER();
 }
 //-----------------------------------------------------------           Registered            ---------------------------- 
 
