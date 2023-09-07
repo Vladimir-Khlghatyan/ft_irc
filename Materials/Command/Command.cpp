@@ -8,7 +8,8 @@ Command::Command(Server *server) : _server(server)
                  &Command::CommandPONG, &Command::CommandCAP,    //4,5
                  &Command::CommandJOIN, &Command::commandPRIVMSG,//6,7
                  &Command::commandKICK, &Command::commandINVITE, //8,9
-                 &Command::commandMODE};                         //10
+                 &Command::commandMODE, &Command::commandWHO,    //10,11
+                 &Command::commandQuit};                         //12
 
     // _commands.insert(std::make_pair("", f[]));
     _commands.insert(std::make_pair("PASS", f[0]));
@@ -22,7 +23,8 @@ Command::Command(Server *server) : _server(server)
     _commands.insert(std::make_pair("KICK", f[8]));
     _commands.insert(std::make_pair("INVITE", f[9]));
     _commands.insert(std::make_pair("MODE", f[10]));
-
+    _commands.insert(std::make_pair("WHO", f[11]));
+    _commands.insert(std::make_pair("QUIT", f[12]));
 }
 
 Command::~Command()
@@ -558,4 +560,70 @@ void Command::commandMODE(Client *C)
             channel->setKey("");
         }
     }
+}
+
+
+void Command::commandWHO(Client *C)
+{
+    DEBUGGER();
+    if (!C->isRegistered())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        DEBUGGER();
+        return ;
+    }
+    if (_arg.empty())
+    {
+        C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "WHO"));
+        return ;
+    }
+
+    if (_arg[0][0] == '#' || _arg[0][0] == '&')
+    {
+        Channel* channel = _server->getChannel(_arg[0]);
+        if (!channel)
+        {
+            C->reply(ERR_NOSUCHNICK(C->getNICK(), _arg[0]));
+            return ;
+        }
+        if (!channel->isInChannel(C))
+        {
+            C->reply(ERR_NOTONCHANNEL(C->getNICK(), _arg[0]));
+            return ;
+        }
+        channel->replayWho(C);
+        return ;
+    }
+
+    Client* client = _server->getClient(_arg[0]);
+    if (!client)
+    {
+        C->reply(ERR_NOSUCHNICK(C->getNICK(), _arg[0]));
+        return ;
+    }
+    std::vector<std::string> atribut = client->getClientAtribut();
+    std::string messag = RPL_WHOREPLY(C->getNICK(), "*", atribut[1], atribut[2], atribut[0], "G", atribut[3]);
+    C->sending(messag);
+    C->sending(RPL_ENDOFWHO(C->getNICK(), _arg[0]));
+}
+
+void Command::commandQuit(Client *C)
+{
+    DEBUGGER();
+    if (!C->isRegistered())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        DEBUGGER();
+        return ;
+    }
+    std::string replay;
+    if (!_arg.empty())
+    {
+        int i = 0;
+        while(!_arg[i].empty())
+            replay += " " + _arg[i++];
+    }
+    C->leavingALLChannels(replay);
+    C->sending(RPL_QUIT(C->getPrefix(), replay));
+    _server->deletToMaps(C);
 }

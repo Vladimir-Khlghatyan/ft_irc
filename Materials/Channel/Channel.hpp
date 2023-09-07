@@ -24,6 +24,7 @@ class Channel
         void joinClient(Client* C);
         void kickClient(Client* C, const std::string& reason);
         bool isInChannel(Client* C);
+        void replayWho(Client* C);
         bool isAdmin(Client* C);
         void sendMessage(int fd, std::string message);
         void sending(Client* C, const std::string& msg, const std::string& cmd);

@@ -248,6 +248,29 @@ void Server::closeFreeALL(void)
     _Clients.clear();
 }
 
+void Server::deletToMaps(Client* C)
+{
+    std::map<std::string, int>::iterator it = _nickname.begin();
+    for( ; it != _nickname.end(); ++it)
+    {
+        if (it->first == C->getNICK())
+        {
+            _nickname.erase(it);
+            break ;
+        }
+    }
+    std::map<int, Client*>::iterator it1 = _Clients.begin();
+    for(; it1 != _Clients.end();++it1)
+    {
+        if (it1->second == C)
+        {
+            delete C;
+            _Clients.erase(it1);
+            break ;
+        }
+    }
+}
+
 
 //                     -----------------------  Server start  -------------------------------
 

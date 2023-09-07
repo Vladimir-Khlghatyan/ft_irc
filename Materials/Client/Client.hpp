@@ -29,6 +29,7 @@ class Client
         std::string getCommand(void);
         std::string	getPrefix(void);
         std::vector <std::string> getArguments(void);
+        std::vector<std::string> getClientAtribut(void);
 
         void setInputBuffer(const std::string &inputBuffer);
         void setNICK(std::string nick);
@@ -44,6 +45,7 @@ class Client
     
         void sending(const std::string& massage);
         void reply(const std::string& reply);
+        void leavingALLChannels(const std::string& massage);
 
         std::string _tmpBuffer;
         

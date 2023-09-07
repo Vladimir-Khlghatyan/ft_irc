@@ -44,6 +44,8 @@ class Command
         void commandKICK(Client *C);    //8
         void commandINVITE(Client *C);  //9
         void commandMODE(Client *C);    //10
+        void commandWHO(Client *C);     //11
+        void commandQuit(Client *C);    //12
     private:
         std::string _password;
         std::map<std::string, FUNC> _commands;
