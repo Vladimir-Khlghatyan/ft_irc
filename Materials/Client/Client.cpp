@@ -218,9 +218,9 @@ void Client::reply(const std::string& reply)
 //-----------------------------------------------------------              living              --------------------------------------
 
 
-void	Client::leavingForChannels(Channel* channel, int mode)
+void	Client::leavingForChannels(Channel* channel)
 {
-    if (mode == 0)
+    if (!channel)
     {
         for (std::vector<Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
             (*it)->part(this);

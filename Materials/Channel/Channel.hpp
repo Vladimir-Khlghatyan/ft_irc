@@ -30,7 +30,7 @@ class Channel
         void nameReply(Client *C);
         void part(Client *C);
         bool emptyClients(void);
-        Client *getByUserName(std::string user);
+        Client *getClientByNick(std::string nickname);
     
     
     private:

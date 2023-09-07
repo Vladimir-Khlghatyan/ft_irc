@@ -315,7 +315,7 @@ void Command::CommandJOIN(Client *C)
     }
     if (_arg[0] == "0")
     {
-        C->leavingForChannels(NULL, 0);
+        C->leavingForChannels(NULL);
         _server->checkForCloseCannel();
         DEBUGGER();
         return ;
@@ -372,40 +372,44 @@ void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
     for( ; it != target.end(); ++it)
     {
         std::string channelName = it->first;
-        std::string userName = it->second;
-        // std::string nickName = it->second;
+        std::string nickname = it->second;
 
         Channel* channel = _server->getChannel(channelName);
-        Client* user = channel->getByUserName(userName);//
-        // Client* user = channel->getClient(nickName);
-
         if (!channel)
         {
             C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName));
             return ;
         }
-        else if (!channel->isInChannel(C))
+
+        Client* client = channel->getClientByNick(nickname);
+        if (!client)
+        {
+            C->reply(ERR_USERNOTINCHANNEL(C->getNICK(), nickname, channelName));
+            return ;
+        }
+
+        if (!channel->isInChannel(C))
         {
             C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
             return ;
         }
+
         if (!(channel->isAdmin(C)))
         {
             C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
             return ;
         }
 
-        if (!user)
-        {
-            C->reply(ERR_USERNOTINCHANNEL(C->getNICK(), userName, channelName));
-            return ;
-        }
-        std::string reason = "No reason specified.";
+        std::string reason;
+        
+        if (_arg.size() > 2)
+            for (size_t i = 2; i < _arg.size(); ++i)
+                reason.append(" " + _arg[i]);
+        else
+            reason = "No reason specified.";
 
-        for (size_t i = 2; i < _arg.size(); ++i)
-            reason.append(" " + _arg[i]);
-        channel->kickClient(user, reason);
-        user->leavingForChannels(channel, 1);
+        channel->kickClient(client, reason);
+        client->leavingForChannels(channel);
     }
 }
 

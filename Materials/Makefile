@@ -25,7 +25,7 @@ HEADERS 	= $(wildcard $(SRC_DIR)*.hpp) \
 			  $(wildcard $(SRCDEBUGGER_DIR)*.hpp) \
 		  	  $(wildcard ./*.hpp)
 
-RMIF	=	rm -f
+RMIF		=	rm -f
 
 OBJ			=	${SRCS:.cpp=.o}
 OBJCLIENT	=	${SRCSCLIENT:.cpp=.o}

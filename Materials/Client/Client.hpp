@@ -39,7 +39,7 @@ class Client
         void splitBufferToList(void);
         void checkForRegistered(void);
         bool isRegistered(void);
-        void leavingForChannels(Channel* channel, int mode);
+        void leavingForChannels(Channel* channel);
         void joinToChannel(Channel *chanel);
     
         void sending(const std::string& massage);

@@ -53,12 +53,12 @@ bool Channel::isInChannel(Client* C)
     return true;
 }
 
-Client *Channel::getByUserName(std::string user)
+Client *Channel::getClientByNick(std::string nickname)
 {
     std::vector<Client*>::iterator it = _clients.begin();
     for( ; it != _clients.end(); ++it)
     {
-        if ((*it)->getUSER() == user)
+        if ((*it)->getNICK() == nickname)
             return (*it);
     }
     return NULL;

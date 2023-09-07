@@ -42,8 +42,8 @@ class Command
         void CommandJOIN(Client *C);    //6
         void commandPRIVMSG(Client *C); //7
         void commandKICK(Client *C);    //8
-        void commandINVITE(Client *C);   //9
-        void commandMODE(Client *C);      //10
+        void commandINVITE(Client *C);  //9
+        void commandMODE(Client *C);    //10
     private:
         std::string _password;
         std::map<std::string, FUNC> _commands;
