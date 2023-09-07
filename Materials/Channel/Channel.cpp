@@ -4,7 +4,9 @@
 Channel::Channel(const std::string& channelName, const std::string& key) \
     : _channelName(channelName) \
     , _key(key)
-{ }
+{ 
+    _inviteOnly = false;
+}
 
 Channel::~Channel()
 { }
@@ -12,6 +14,11 @@ Channel::~Channel()
 void Channel::setKey(const std::string& key)
 {
     _key = key;
+}
+
+void Channel::setInviteOnly(bool mode)
+{
+    _inviteOnly = mode;
 }
 
 std::string Channel::getKey(void)
@@ -85,6 +92,11 @@ bool Channel::isOperator(Client *C)
     if (std::find(_operators.begin(), _operators.end(), C) == _operators.end())
         return false;
     return true;
+}
+
+bool Channel::isInviteOnly(void)
+{
+    return _inviteOnly;
 }
 
 void Channel::sendMessage(int fd, std::string message)

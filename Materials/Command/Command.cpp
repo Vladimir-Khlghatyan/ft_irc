@@ -40,10 +40,7 @@ std::string Command::getPass(void)
     return _password;
 }
 
-
 //------------------------------------    utils     ---------------------------
-
-
 
 bool Command::nickIsCorrect(std::string buffer)  // // must by update
 {
@@ -128,7 +125,6 @@ std::cout<<"command{"<<C->getCommand()<<"}"<<std::endl;
     C->reply(ERR_UNKNOWNCOMMAND(C->getNICK(), C->getCommand()));
 }
 
-
 void Command::commandPASS(Client* C)
 {
     if (!C->getPASS().empty())
@@ -177,13 +173,13 @@ void Command::commandNICK(Client* C)
         C->reply(ERR_NICKNAMEINUSE(C->getNICK(), nick));
         return ;
     }
-DEBUGGER();
+    DEBUGGER();
     _server->updateNickMap(C, nick);
-DEBUGGER();
+    DEBUGGER();
     C->setNICK(nick);
-DEBUGGER();
+    DEBUGGER();
     C->checkForRegistered();
-DEBUGGER();
+    DEBUGGER();
 }
 
 void Command::commandUSER(Client *C)
@@ -233,7 +229,6 @@ void Command::commandPRIVMSG(Client *C)
      
     DEBUGGER();
     std::vector<std::string> targets;
-
     std::string keys = _arg[0];
 
     keys += ',';
@@ -278,6 +273,7 @@ void Command::commandPRIVMSG(Client *C)
             if (!client)
             {
                 C->reply(ERR_NOSUCHNICK(C->getNICK(), targets[i]));
+                DEBUGGER();
                 return ;
             }
             DEBUGGER();
@@ -341,7 +337,8 @@ void Command::CommandJOIN(Client *C)
     std::string pass = _arg.size() > 1 ? _arg[1] : "";
 
     std::map<std::string, std::string> ch = stringToMap(chanelName, pass);
-    for (std::map<std::string, std::string>::iterator it = ch.begin(); it != ch.end(); ++it) {
+    for (std::map<std::string, std::string>::iterator it = ch.begin(); it != ch.end(); ++it)
+    {
         chanelName = it->first;
         DEBUGGER();
         pass = it->second;
@@ -356,6 +353,13 @@ void Command::CommandJOIN(Client *C)
         if (!channel)
             channel = _server->createChannel(chanelName, pass);
 
+        if (channel->isInviteOnly())
+        {
+            C->reply(ERR_INVITEONLYCHAN(C->getNICK(), chanelName));
+            DEBUGGER();
+            return ;
+        }
+
         DEBUGGER();
         if (/*channel->getKey() != "" && */channel->getKey() != pass)
         {
@@ -368,8 +372,7 @@ void Command::CommandJOIN(Client *C)
     }
 }
 
-
-void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
+void Command::commandKICK(Client *C)
 {
     DEBUGGER();
     if (!C->isRegistered())
@@ -447,7 +450,6 @@ void Command::commandKICK(Client *C)   //userName or nickNAme ???????????????
     }
 }
 
-
 void Command::commandINVITE(Client *C)
 {
     DEBUGGER();
@@ -512,14 +514,15 @@ void Command::commandMODE(Client *C)
         DEBUGGER();
         return ;
     }
+
     if (_arg.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "MODE"));
         DEBUGGER();
         return ;
     }
-    std::string nicklName = _arg[0];
 
+    std::string nicklName = _arg[0];
     Channel* channel = _server->getChannel(nicklName);
     if (!channel)
     {
@@ -527,15 +530,17 @@ void Command::commandMODE(Client *C)
         DEBUGGER();
         return ;
     }
-    else if (!channel->isInChannel(C))
+
+    if (!channel->isInChannel(C))
     {
         C->reply(ERR_NOTONCHANNEL(C->getNICK(), nicklName));
         DEBUGGER();
         return ;
     }
+
     if (_arg.size() == 1)
     {
-        if (!(channel->getKey() == ""))
+        if (!channel->getKey().empty())
             C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + channel->getKey()));
         DEBUGGER();
         return ;

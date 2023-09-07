@@ -17,6 +17,7 @@ class Channel
     public:
         void setKey(const std::string& key);
         void setAdmin(void);
+        void setInviteOnly(bool mode);
 
         std::string getKey(void);
         std::string getChannelName(void);
@@ -31,12 +32,14 @@ class Channel
         void part(Client *C);
         bool emptyClients(void);
         bool isOperator(Client *C);
+        bool isInviteOnly(void);
         Client *getClientByNick(std::string nickname);
     
     
     private:
     std::string             _channelName;
     std::string             _key;
+    bool                    _inviteOnly;
 
     std::vector<Client*>    _clients;
     std::vector<Client*>    _operators;
