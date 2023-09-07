@@ -523,6 +523,7 @@ void Command::commandMODE(Client *C)
     }
 
     std::string nicklName = _arg[0];
+
     Channel* channel = _server->getChannel(nicklName);
     if (!channel)
     {
@@ -538,29 +539,67 @@ void Command::commandMODE(Client *C)
         return ;
     }
 
-    if (_arg.size() == 1)
+    if (!channel->isOperator(C))
     {
-        if (!channel->getKey().empty())
-            C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + channel->getKey()));
+        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channel->getChannelName()));
         DEBUGGER();
         return ;
     }
-    std::string mode = _arg[1];
-    if (_arg.size() > 2)
+
+    if (_arg.size() > 1)
     {
-        DEBUGGER();
-        std::string key = _arg[2];
-        if (!(channel->isAdmin(C)))
-            C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), nicklName));
-        else if (mode == "+k")
+        std::string mode = _arg[1];
+
+        if (mode == "i" || mode == "+i")
         {
-            C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + key));
-            channel->setKey(key);
+            channel->setInviteOnly(true);
+            C->sending(RPL_MODE(C->getPrefix(), nicklName, "+i"));
         }
-        else if (mode == "-k" && channel->getKey() == key)
+        else if (mode == "-i")
         {
-            C->sending(RPL_MODE(C->getPrefix(), nicklName, "-k "));
-            channel->setKey("");
+            channel->setInviteOnly(false);
+            C->sending(RPL_MODE(C->getPrefix(), nicklName, "-i"));
+        }
+        else if (0)
+        {
+            // some code
+        }
+        else
+        {
+            C->reply(ERR_UNKNOWNMODE(C->getNICK(), mode));
+            DEBUGGER();
+            return;
         }
     }
+
+
+
+
+
+
+    // if (_arg.size() == 1)
+    // {
+    //     if (!channel->getKey().empty())
+    //         C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + channel->getKey()));
+    //     DEBUGGER();
+    //     return ;
+    // }
+    // std::string mode = _arg[1];
+    // if (_arg.size() > 2)
+    // {
+    //     DEBUGGER();
+    //     std::string key = _arg[2];
+    //     if (!(channel->isAdmin(C)))
+    //         C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), nicklName));
+    //     else if (mode == "+k")
+    //     {
+    //         C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + key));
+    //         channel->setKey(key);
+    //     }
+    //     else if (mode == "-k" && channel->getKey() == key)
+    //     {
+    //         C->sending(RPL_MODE(C->getPrefix(), nicklName, "-k "));
+    //         channel->setKey("");
+    //     }
+    // }
 }

@@ -25,6 +25,7 @@
 #define ERR_NEEDMOREPARAMS(source, command)     "461 " + source + " " + command + " :Not enough parameters"
 #define ERR_ALREADYREGISTERED(source)           "462 " + source + " :You may not reregister"
 #define ERR_PASSWDMISMATCH(source)               source + " :Password incorrect" //464
+#define ERR_UNKNOWNMODE(source, command)        "472 " + source + " " + command + " :is unknown mode char to me"
 #define ERR_INVITEONLYCHAN(source, command)     "473 " + source + " " + command + " :Cannot join channel (+i)"
 #define ERR_BADCHANNELKEY(source, command)      "475 " + source + " " + command + " :Cannot join channel (+k)"
 #define ERR_BADCHANMASK(source, command)        "476 " + source + " " + command + " :Bad Channel Mask"
