@@ -159,4 +159,15 @@ bool Channel::emptyClients(void)
     return _clients.empty();
 }
 
-
+void Channel::replayWho(Client *C)
+{
+    std::string replay;
+    std::vector<std::string> atribut;
+    for(size_t i = 0; i < _clients.size(); ++i)
+    {
+        atribut = _clients[i]->getClientAtribut();
+        replay = RPL_WHOREPLY(C->getNICK(), _channelName, atribut[1], atribut[2], atribut[0], "H", atribut[3]);
+        C->sending(replay);
+    }
+    C->sending(RPL_ENDOFWHO(C->getNICK(), _channelName));
+}

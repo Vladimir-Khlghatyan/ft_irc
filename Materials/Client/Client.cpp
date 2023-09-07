@@ -61,6 +61,15 @@ std::string Client::getPASS(void)
     return _pass;
 }
 
+std::vector<std::string> Client::getClientAtribut(void)
+{
+    std::vector<std::string> user;
+    user.push_back(_nick);
+    user.push_back(_user);
+    user.push_back(_hostname);
+    user.push_back(_realname);
+    return user;
+}
 
 std::string	Client::getPrefix(void)
 {
@@ -241,4 +250,14 @@ void	Client::leavingForChannels(Channel* channel)
             }
         }
     }
+}
+
+
+void Client::leavingALLChannels(const std::string& massage)
+{
+    for (std::vector<Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+        (*it)->kickClient(this, massage);
+DEBUGGER();
+    _channels.clear();
+DEBUGGER();
 }

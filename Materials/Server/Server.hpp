@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <map>
+#include <iterator>
 #include <set>
 #include <utility> // for make_pair
 // #include <netdb.h> // for f
@@ -41,6 +42,7 @@ class Server
         void checkForCloseCannel(void);
         Channel* getChannel(std::string &name);
         Channel *createChannel(const std::string &name, const std::string &pass);
+        void deletToMaps(Client* C);
 
         std::string getPASS(void);
         Client* getClient(const std::string& nickname);
