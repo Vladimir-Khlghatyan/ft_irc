@@ -5,6 +5,7 @@ Client::Client() : _fd(0)
 {
     _registered = false;
     _passTryCount = 0;
+    _ifClosed = false;
 }
 
 Client::Client(int fd, struct sockaddr_in client_addr)
@@ -14,6 +15,7 @@ Client::Client(int fd, struct sockaddr_in client_addr)
 
     _registered = false;
     _passTryCount = 0;
+    _ifClosed = false;
 
     // այս մասը պետք է ստուգել, արդյոք hostname-ը ճիշտ է ստացվում
     char hostname[NI_MAXHOST];    
@@ -49,6 +51,11 @@ std::string Client::getUSER(void)
 std::string Client::getCommand(void)
 {
     return _command;
+}
+
+bool Client::ifClosed(void)
+{
+    return _ifClosed;
 }
 
 std::vector <std::string> Client::getArguments(void)
@@ -87,6 +94,10 @@ std::string	Client::getPrefix(void)
 
 //------------------------------------              SET         -----------------------
 
+void Client::setClosed(bool x)
+{
+    _ifClosed = x;
+}
 
 void Client::setNICK(std::string nick)
 {
@@ -191,7 +202,7 @@ void Client::splitBufferToList(void)
 
 void Client::checkForRegistered(void)
 {
-    if (!_pass.empty() && !_user.empty() && !_nick.empty())
+    if (!_pass.empty() && !_user.empty() && !_nick.empty() && ! _registered)
     {
         _registered = true;
         reply(RPL_WELCOME(_nick));
@@ -212,10 +223,13 @@ bool Client::isRegistered(void)
 
 void	Client::sending(const std::string& massage)
 {
+DEBUGGER();
     std::string buff = massage + "\r\n";
+DEBUGGER();
 
-    if (send(_fd, buff.c_str(), buff.length(), 0) == -1)
+    if (!_ifClosed && send(_fd, buff.c_str(), buff.length(), 0) == -1)
         std::cout << "Error: can't send message to client." << std::endl;
+DEBUGGER();
 }
 
 void Client::reply(const std::string& reply)

@@ -355,6 +355,11 @@ void Command::CommandJOIN(Client *C)
         if (!channel)
             channel = _server->createChannel(channelName, pass);
 
+        if (channel->getClientByNick(C->getNICK()))
+        {
+            C->reply(ERR_USERONCHANNEL(C->getNICK(), "", channelName));
+            return ;
+        }
         if (channel->isInviteOnly())
         {
             C->reply(ERR_INVITEONLYCHAN(C->getNICK(), channelName));
@@ -714,12 +719,7 @@ void Command::commandWHO(Client *C)
 void Command::commandQuit(Client *C)
 {
     DEBUGGER();
-    if (!C->isRegistered())
-    {
-        C->reply(ERR_NOTREGISTERED(C->getNICK()));
-        DEBUGGER();
-        return ;
-    }
+
     std::string replay;
     if (!_arg.empty())
     {
@@ -728,6 +728,13 @@ void Command::commandQuit(Client *C)
             replay += " " + _arg[i++];
     }
     C->leavingALLChannels(replay);
+    DEBUGGER();
+
     C->sending(RPL_QUIT(C->getPrefix(), replay));
-    _server->deletToMaps(C);
+    DEBUGGER();
+    close(C->getFd());
+    DEBUGGER();
+    FD_CLR(C->getFd(), &_server->_READ_fds);
+    _server->addRemoveFd(C);
+    DEBUGGER();
 }

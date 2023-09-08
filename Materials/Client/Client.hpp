@@ -22,6 +22,7 @@ class Client
         Client(int fd, struct sockaddr_in client_addr);
 
         int getFd(void);
+        bool ifClosed(void);
         std::string getInputBuffer(void);
         std::string getNICK(void);
         std::string getPASS(void);
@@ -36,6 +37,7 @@ class Client
         void setUSER(std::string &user, std::string &realname);
         void setPASS(std::string pass);
         void setArguments(void);
+        void setClosed(bool x);
 
         void splitBufferToList(void);
         void checkForRegistered(void);
@@ -64,6 +66,7 @@ class Client
         std::list <std::string> _List;
         std::vector<Channel*> _channels;
         
+        bool        _ifClosed;
         bool        _registered;   // registration level must be 3 (password, nickname and username)
         int         _passTryCount; // max 3 
 };

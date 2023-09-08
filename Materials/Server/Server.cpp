@@ -153,10 +153,13 @@ void    Server::ReadingforDescriptor(void)
     
     for( ;it != this->_Clients.end(); ++it) 
     {
+        DEBUGGER();
+        std::cout<<"fd =="<<it->first<<std::endl;
         if (FD_ISSET(it->first, &_READ_fds))
         {
+            DEBUGGER();
             sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
-
+            DEBUGGER();
             if (sizeBuff == -1)
             {
                 this->closeFreeALL();
@@ -165,9 +168,8 @@ void    Server::ReadingforDescriptor(void)
             else if (sizeBuff == 0)
             {
                 FD_CLR(it->first, &this->_READ_fds);
-                close(it->first);
-                delete it->second;
-                this->_Clients.erase(it);
+                it->second->setClosed(true);
+                _command->commandQuit(it->second);
                 std::cout << "The client is disconnected (fd = " << it->first<< ")." << std::endl;
                 --it;
             }
@@ -215,15 +217,19 @@ void    Server::ReadingforDescriptor(void)
               
             }
         }
+        DEBUGGER();
         if (FD_ISSET(it->first, &_ER_fds))
         {
             std::cout<<" -------------------------&_ER_fds)) "<<std::endl;
         }
+         DEBUGGER();
         if (FD_ISSET(it->first, &_WR_fds))
         {
             std::cout<<" +++++++++++++++++++++++++&_WR_fds))"<<std::endl;
         }
+         DEBUGGER();
     }
+    removefromMaps();
 }
 
 //-------------------------------------------------      Manag Client   -------------------
@@ -248,26 +254,33 @@ void Server::closeFreeALL(void)
     _Clients.clear();
 }
 
-void Server::deletToMaps(Client* C)
+void Server::removefromMaps()
 {
-    std::map<std::string, int>::iterator it = _nickname.begin();
-    for( ; it != _nickname.end(); ++it)
+    Client* C;
+
+    while(!_removeFd.empty())
     {
-        if (it->first == C->getNICK())
+        C = _removeFd.top();
+        std::map<std::string, int>::iterator it = _nickname.begin();
+        for( ; it != _nickname.end(); ++it)
         {
-            _nickname.erase(it);
-            break ;
+            if (it->first == C->getNICK())
+            {
+                _nickname.erase(it);
+                break ;
+            }
         }
-    }
-    std::map<int, Client*>::iterator it1 = _Clients.begin();
-    for(; it1 != _Clients.end();++it1)
-    {
-        if (it1->second == C)
+        std::map<int, Client*>::iterator it1 = _Clients.begin();
+        for(; it1 != _Clients.end();++it1)
         {
-            delete C;
-            _Clients.erase(it1);
-            break ;
+            if (it1->second == C)
+            {
+                delete C;
+                _Clients.erase(it1);
+                break ;
+            }
         }
+        _removeFd.pop();
     }
 }
 
@@ -365,4 +378,10 @@ Channel *Server::createChannel(const std::string &name, const std::string &pass)
     Channel *chan = new Channel(name, pass);
     _channels.insert(chan);
     return chan;
+}
+
+void Server::addRemoveFd(Client* C)
+{
+    if (C)
+        _removeFd.push(C);
 }
