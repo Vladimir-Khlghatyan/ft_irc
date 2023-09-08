@@ -70,7 +70,7 @@ class Server
         std::map<int, Client*>      _Clients;   // fd : client
         std::map<std::string, int>  _nickname;  // nick : fd
         Command*                    _command;
-        std::set<Channel*>         _channels;
+        std::set<Channel*>          _channels;
 };
 
 bool argsAreValid(std::string port, std::string password);
