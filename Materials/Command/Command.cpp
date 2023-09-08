@@ -335,29 +335,34 @@ void Command::CommandJOIN(Client *C)
     }
 
     DEBUGGER();
-    std::string chanelName = _arg[0];
+    std::string channelName = _arg[0];
     std::string pass = _arg.size() > 1 ? _arg[1] : "";
 
-    std::map<std::string, std::string> ch = stringToMap(chanelName, pass);
+    std::map<std::string, std::string> ch = stringToMap(channelName, pass);
     for (std::map<std::string, std::string>::iterator it = ch.begin(); it != ch.end(); ++it)
     {
-        chanelName = it->first;
+        channelName = it->first;
         DEBUGGER();
         pass = it->second;
-        if (chanelName[0] != '#' && chanelName[0] != '&')
+        if (channelName[0] != '#' && channelName[0] != '&')
         {
-            C->reply(ERR_BADCHANMASK(C->getNICK(), chanelName));
+            C->reply(ERR_BADCHANMASK(C->getNICK(), channelName));
             DEBUGGER();
             return ;
         }
         DEBUGGER();
-        Channel* channel = _server->getChannel(chanelName);
+        Channel* channel = _server->getChannel(channelName);
         if (!channel)
-            channel = _server->createChannel(chanelName, pass);
-
+            channel = _server->createChannel(channelName, pass);
+        
+        if (channel->getClientByNick(C->getNICK()))
+        {
+            C->reply(ERR_USERONCHANNEL(C->getNICK(), "", channelName));
+            return ;
+        }
         if (channel->isInviteOnly())
         {
-            C->reply(ERR_INVITEONLYCHAN(C->getNICK(), chanelName));
+            C->reply(ERR_INVITEONLYCHAN(C->getNICK(), channelName));
             DEBUGGER();
             return ;
         }
@@ -365,7 +370,7 @@ void Command::CommandJOIN(Client *C)
         DEBUGGER();
         if (/*channel->getKey() != "" && */channel->getKey() != pass)
         {
-            C->reply(ERR_BADCHANNELKEY(C->getNICK(), chanelName));
+            C->reply(ERR_BADCHANNELKEY(C->getNICK(), channelName));
             DEBUGGER();
             return ;
         }
@@ -654,12 +659,7 @@ void Command::commandWHO(Client *C)
 void Command::commandQuit(Client *C)
 {
     DEBUGGER();
-    if (!C->isRegistered())
-    {
-        C->reply(ERR_NOTREGISTERED(C->getNICK()));
-        DEBUGGER();
-        return ;
-    }
+
     std::string replay;
     if (!_arg.empty())
     {
@@ -668,6 +668,13 @@ void Command::commandQuit(Client *C)
             replay += " " + _arg[i++];
     }
     C->leavingALLChannels(replay);
+    DEBUGGER();
+
     C->sending(RPL_QUIT(C->getPrefix(), replay));
-    _server->deletToMaps(C);
+    DEBUGGER();
+    close(C->getFd());
+    DEBUGGER();
+    FD_CLR(C->getFd(), &_server->_READ_fds);
+    _server->addRemoveFd(C);
+    DEBUGGER();
 }

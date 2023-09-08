@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <map>
+#include <stack>
 #include <iterator>
 #include <set>
 #include <utility> // for make_pair
@@ -42,7 +43,8 @@ class Server
         void checkForCloseCannel(void);
         Channel* getChannel(std::string &name);
         Channel *createChannel(const std::string &name, const std::string &pass);
-        void deletToMaps(Client* C);
+        void removefromMaps(void);
+        void addRemoveFd(Client* C);
 
         std::string getPASS(void);
         Client* getClient(const std::string& nickname);
@@ -70,7 +72,8 @@ class Server
         std::map<int, Client*>      _Clients;   // fd : client
         std::map<std::string, int>  _nickname;  // nick : fd
         Command*                    _command;
-        std::set<Channel*>         _channels;
+        std::set<Channel*>          _channels;
+        std::stack<Client*>         _removeFd;
 };
 
 bool argsAreValid(std::string port, std::string password);
