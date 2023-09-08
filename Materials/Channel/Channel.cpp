@@ -16,6 +16,11 @@ void Channel::setKey(const std::string& key)
     _key = key;
 }
 
+void Channel::setTopic(const std::string& topic)
+{
+    _topic = topic;
+}
+
 void Channel::setInviteOnly(bool mode)
 {
     _inviteOnly = mode;
@@ -24,6 +29,11 @@ void Channel::setInviteOnly(bool mode)
 std::string Channel::getKey(void)
 {
     return _key;
+}
+
+std::string Channel::getTopic(void)
+{
+    return _topic;
 }
 
 std::string Channel::getChannelName(void)
@@ -159,7 +169,7 @@ bool Channel::emptyClients(void)
     return _clients.empty();
 }
 
-void Channel::replayWho(Client *C)
+void Channel::replyWho(Client *C)
 {
     std::string replay;
     std::vector<std::string> atribut;

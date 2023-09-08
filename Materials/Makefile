@@ -1,51 +1,52 @@
-NAME	=	ft_irc
+NAME			= ft_irc
+CPP				= c++
+RMIF			= rm -f
+CPPFLAGS		= -Wall -Werror -Wextra -std=c++98 -I.
 
-CPP		=	c++
+SERVER_DIR		= ./Server
+CLIENT_DIR		= ./Client
+COMMAND_DIR		= ./Command
+CHANNEL_DIR		= ./Channel
+DEBUGGER_DIR	= ./Debugger
 
-CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98 -I.
-
-SRC_DIR			= ./Server
-SRCCLIENT_DIR	= ./Client
-SRCCOMMAND_DIR	= ./Command
-SRCCANNEL_DIR	= ./Channel
-SRCDEBUGGER_DIR = ./Debugger
+RED				= \033[1;31m
+GREEN			= \033[1;32m
+YELLOW 			= \033[1;33m
+DEFAULT			= \033[0m
 
 # List of source files
-SRCS			=	$(wildcard $(SRC_DIR)/*.cpp) \
-					$(wildcard ./*.cpp)
-SRCSCLIENT		=	$(wildcard $(SRCCLIENT_DIR)/*.cpp)
-SRCSCOMMAND		=	$(wildcard $(SRCCOMMAND_DIR)/*.cpp)
-SRCSCHANNEL		=	$(wildcard $(SRCCANNEL_DIR)/*.cpp)
-SRCSDEBUGGER	=	$(wildcard $(SRCDEBUGGER_DIR)/*.cpp)
+SRCS	=	$(wildcard $(SERVER_DIR)/*.cpp) \
+			$(wildcard $(CLIENT_DIR)/*.cpp) \
+			$(wildcard $(COMMAND_DIR)/*.cpp) \
+			$(wildcard $(CHANNEL_DIR)/*.cpp) \
+			$(wildcard $(DEBUGGER_DIR)/*.cpp) \
+			$(wildcard ./*.cpp)
 
-HEADERS 	= $(wildcard $(SRC_DIR)*.hpp) \
-		  	  $(wildcard $(SRCCLIENT_DIR)*.hpp) \
-		  	  $(wildcard $(SRCCOMMAND_DIR)*.hpp) \
-		  	  $(wildcard $(SRCCANNEL_DIR)*.hpp) \
-			  $(wildcard $(SRCDEBUGGER_DIR)*.hpp) \
-		  	  $(wildcard ./*.hpp)
+HEADERS =	$(wildcard $(SERVER_DIR)/*.hpp) \
+			$(wildcard $(CLIENT_DIR)/*.hpp) \
+			$(wildcard $(COMMAND_DIR)/*.hpp) \
+			$(wildcard $(CHANNEL_DIR)/*.hpp) \
+			$(wildcard $(DEBUGGER_DIR)/*.hpp) \
+			$(wildcard ./*.hpp)
 
-RMIF		=	rm -f
-
-OBJ			=	${SRCS:.cpp=.o}
-OBJCLIENT	=	${SRCSCLIENT:.cpp=.o}
-OBJCOMMAND	=	${SRCSCOMMAND:.cpp=.o}
-OBJCHANNEL	=	${SRCSCHANNEL:.cpp=.o}
-OBJDEBUGGER	=	${SRCSDEBUGGER:.cpp=.o}
+OBJS	=	${SRCS:.cpp=.o}
 
 %.o: %.cpp $(HEADERS)
-	$(CPP) $(CPPFLAGS) -c $< -o $@
+	@$(CPP) $(CPPFLAGS) -c $< -o $@
+
+${NAME}:	${OBJS}
+			@${CPP} ${CPPFLAGS} ${OBJS} -o ${NAME}
+			@echo "$(GREEN) ✔ $(NAME) created!$(DEFAULT)"
 
 all:		${NAME}
 
-${NAME}:	${OBJ} ${OBJCLIENT} ${OBJCOMMAND} ${OBJCHANNEL}  ${OBJDEBUGGER}
-	${CPP} ${CPPFLAGS} ${OBJ} ${OBJCLIENT} ${OBJCOMMAND} ${OBJCHANNEL} ${OBJDEBUGGER} -o ${NAME}
-
 clean:
-		   	${RMIF} ${OBJ} ${OBJCLIENT}  ${OBJCOMMAND} ${OBJCHANNEL} ${OBJDEBUGGER}
+		   	@${RMIF} ${OBJS}
+			@echo "$(YELLOW) ✔ object files deleted!$(DEFAULT)"
 
 fclean:		clean
-			${RMIF} ${NAME} ${NAMECLIENT} ${OBJCOMMAND} ${OBJCHANNEL} ${OBJDEBUGGER}
+			@${RMIF} ${NAME}
+			@echo "$(RED) ✔ executable deleted!$(DEFAULT)"
 
 re:			fclean all
 

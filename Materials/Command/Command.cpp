@@ -3,13 +3,13 @@
 
 Command::Command(Server *server) : _server(server)
 {
-    FUNC f[] = {&Command::commandPASS, &Command::commandNICK,    //0,1
-                 &Command::commandUSER, &Command::CommandPING,   //2,3
-                 &Command::CommandPONG, &Command::CommandCAP,    //4,5
-                 &Command::CommandJOIN, &Command::commandPRIVMSG,//6,7
-                 &Command::commandKICK, &Command::commandINVITE, //8,9
-                 &Command::commandMODE, &Command::commandWHO,    //10,11
-                 &Command::commandQuit};                         //12
+    FUNC f[] = {&Command::commandPASS, &Command::commandNICK,       // 0, 1
+                 &Command::commandUSER, &Command::CommandPING,      // 2, 3
+                 &Command::CommandPONG, &Command::CommandCAP,       // 4, 5
+                 &Command::CommandJOIN, &Command::commandPRIVMSG,   // 6, 7
+                 &Command::commandKICK, &Command::commandINVITE,    // 8, 9
+                 &Command::commandMODE, &Command::commandWHO,       // 10, 11
+                 &Command::commandQUIT, &Command::commandTOPIC};    // 12, 13
 
     // _commands.insert(std::make_pair("", f[]));
     _commands.insert(std::make_pair("PASS", f[0]));
@@ -25,6 +25,7 @@ Command::Command(Server *server) : _server(server)
     _commands.insert(std::make_pair("MODE", f[10]));
     _commands.insert(std::make_pair("WHO", f[11]));
     _commands.insert(std::make_pair("QUIT", f[12]));
+    _commands.insert(std::make_pair("TOPIC", f[13]));
 }
 
 Command::~Command()
@@ -137,6 +138,7 @@ void Command::commandPASS(Client* C)
     if (_arg.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "PASS"));
+        DEBUGGER();
         return ;
     }
 
@@ -161,6 +163,7 @@ void Command::commandNICK(Client* C)
     if (_arg.empty())
     {
         C->reply(ERR_NONICKNAMEGIVEN(C->getNICK()));
+        DEBUGGER();
         return ;
     }
     std::string nick = _arg[0];
@@ -296,6 +299,7 @@ void Command::CommandPING(Client *C)
     if (_arg.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "PING"));
+        DEBUGGER();
         return ;
     }
     C->sending(RPL_PING(C->getPrefix(), _arg[0]));
@@ -307,6 +311,7 @@ void Command::CommandPONG(Client *C)
     if (_arg.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "PONG"));
+        DEBUGGER();
         return ;
     }
     C->sending(RPL_PING(C->getPrefix(), _arg[0]));
@@ -498,6 +503,14 @@ void Command::commandINVITE(Client *C)
         DEBUGGER();
         return ;
     }
+
+    if (!channel->isOperator(C))
+    {
+        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+        DEBUGGER();
+        return ;
+    }
+
     if (channel->isInChannel(client))
     {
         C->reply(ERR_USERONCHANNEL(C->getNICK(), nickName, channelName));
@@ -548,7 +561,7 @@ void Command::commandMODE(Client *C)
 
     if (!channel->isOperator(C))
     {
-        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channel->getChannelName()));
+        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
         DEBUGGER();
         return ;
     }
@@ -638,37 +651,6 @@ void Command::commandMODE(Client *C)
             return;
         }
     }
-
-
-
-
-
-
-    // if (_arg.size() == 1)
-    // {
-    //     if (!channel->getKey().empty())
-    //         C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + channel->getKey()));
-    //     DEBUGGER();
-    //     return ;
-    // }
-    // std::string mode = _arg[1];
-    // if (_arg.size() > 2)
-    // {
-    //     DEBUGGER();
-    //     std::string key = _arg[2];
-    //     if (!(channel->isAdmin(C)))
-    //         C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), nicklName));
-    //     else if (mode == "+k")
-    //     {
-    //         C->sending(RPL_MODE(C->getPrefix(), nicklName, "+k " + key));
-    //         channel->setKey(key);
-    //     }
-    //     else if (mode == "-k" && channel->getKey() == key)
-    //     {
-    //         C->sending(RPL_MODE(C->getPrefix(), nicklName, "-k "));
-    //         channel->setKey("");
-    //     }
-    // }
 }
 
 
@@ -681,9 +663,11 @@ void Command::commandWHO(Client *C)
         DEBUGGER();
         return ;
     }
+
     if (_arg.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "WHO"));
+        DEBUGGER();
         return ;
     }
 
@@ -700,7 +684,7 @@ void Command::commandWHO(Client *C)
             C->reply(ERR_NOTONCHANNEL(C->getNICK(), _arg[0]));
             return ;
         }
-        channel->replayWho(C);
+        channel->replyWho(C);
         return ;
     }
 
@@ -716,7 +700,7 @@ void Command::commandWHO(Client *C)
     C->sending(RPL_ENDOFWHO(C->getNICK(), _arg[0]));
 }
 
-void Command::commandQuit(Client *C)
+void Command::commandQUIT(Client *C)
 {
     DEBUGGER();
 
@@ -737,4 +721,63 @@ void Command::commandQuit(Client *C)
     FD_CLR(C->getFd(), &_server->_READ_fds);
     _server->addRemoveFd(C);
     DEBUGGER();
+}
+
+void Command::commandTOPIC(Client *C)
+{
+    DEBUGGER();
+    if (!C->isRegistered())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        DEBUGGER();
+        return ;
+    }
+
+    if (_arg.empty())
+    {
+        C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "TOPIC"));
+        DEBUGGER();
+        return ;
+    }
+
+    std::string channelName = _arg[0];
+    Channel* channel = _server->getChannel(channelName);
+    if (!channel)
+    {
+        C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName));
+        DEBUGGER();
+        return ;
+    }
+    if (!channel->isInChannel(C))
+    {
+        C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+        DEBUGGER();
+        return ;
+    }
+
+    if (!channel->isOperator(C))
+    {
+        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+        DEBUGGER();
+        return ;
+    }
+
+    if (_arg.size() == 1)
+    {
+        DEBUGGER();
+
+        std::string topic = channel->getTopic();
+        if (topic.empty())
+            C->sending(RPL_NOTOPIC(channelName));
+        else
+        {
+            DEBUGGER();
+            C->sending(RPL_TOPIC(channelName, topic)); // sxal text a tpvum, petq a uxxel
+        }
+    }
+    else
+    {
+        std::string topic = _arg[1];
+        channel->setTopic(topic);
+    }
 }

@@ -73,7 +73,7 @@ class Server
         std::map<std::string, int>  _nickname;  // nick : fd
         Command*                    _command;
         std::set<Channel*>          _channels;
-        std::stack<Client*>         _removeFd;
+        std::stack<Client*>         _removedFDs;
 };
 
 bool argsAreValid(std::string port, std::string password);

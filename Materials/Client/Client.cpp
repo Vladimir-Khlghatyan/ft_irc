@@ -219,8 +219,6 @@ bool Client::isRegistered(void)
 //------------------------------------------------------------              reply               -------------------------------------
 
 
-
-
 void	Client::sending(const std::string& massage)
 {
 DEBUGGER();

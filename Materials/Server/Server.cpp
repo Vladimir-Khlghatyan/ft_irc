@@ -169,7 +169,7 @@ void    Server::ReadingforDescriptor(void)
             {
                 FD_CLR(it->first, &this->_READ_fds);
                 it->second->setClosed(true);
-                _command->commandQuit(it->second);
+                _command->commandQUIT(it->second);
                 std::cout << "The client is disconnected (fd = " << it->first<< ")." << std::endl;
                 --it;
             }
@@ -258,9 +258,9 @@ void Server::removefromMaps()
 {
     Client* C;
 
-    while(!_removeFd.empty())
+    while(!_removedFDs.empty())
     {
-        C = _removeFd.top();
+        C = _removedFDs.top();
         std::map<std::string, int>::iterator it = _nickname.begin();
         for( ; it != _nickname.end(); ++it)
         {
@@ -280,7 +280,7 @@ void Server::removefromMaps()
                 break ;
             }
         }
-        _removeFd.pop();
+        _removedFDs.pop();
     }
 }
 
@@ -383,5 +383,5 @@ Channel *Server::createChannel(const std::string &name, const std::string &pass)
 void Server::addRemoveFd(Client* C)
 {
     if (C)
-        _removeFd.push(C);
+        _removedFDs.push(C);
 }

@@ -16,16 +16,18 @@ class Channel
 
     public:
         void setKey(const std::string& key);
+        void setTopic(const std::string& topic);
         void setAdmin(void);
         void setInviteOnly(bool mode);
 
-        std::string getKey(void);
         std::string getChannelName(void);
+        std::string getKey(void);
+        std::string getTopic(void);
 
         void joinClient(Client* C);
         void kickClient(Client* C, const std::string& reason);
         bool isInChannel(Client* C);
-        void replayWho(Client* C);
+        void replyWho(Client* C);
         bool isAdmin(Client* C);
         void sendMessage(int fd, std::string message);
         void sending(Client* C, const std::string& msg, const std::string& cmd);
@@ -40,6 +42,7 @@ class Channel
     private:
     std::string             _channelName;
     std::string             _key;
+    std::string             _topic;
     bool                    _inviteOnly;
 
     std::vector<Client*>    _clients;
