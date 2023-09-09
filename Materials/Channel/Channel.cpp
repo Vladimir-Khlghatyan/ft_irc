@@ -6,6 +6,7 @@ Channel::Channel(const std::string& channelName, const std::string& key) \
     , _key(key)
 { 
     _inviteOnly = false;
+    _topicMode = true;
 }
 
 Channel::~Channel()
@@ -25,6 +26,12 @@ void Channel::setInviteOnly(bool mode)
 {
     _inviteOnly = mode;
 }
+
+void Channel::setTopicMode(bool mode)
+{
+    _topicMode = mode;
+}
+
 
 std::string Channel::getKey(void)
 {
@@ -103,6 +110,11 @@ bool Channel::isOperator(Client *C)
 bool Channel::isInviteOnly(void)
 {
     return _inviteOnly;
+}
+
+bool Channel::topicModeIsOn(void)
+{
+    return _topicMode;
 }
 
 void Channel::sending(Client* C, const std::string& msg, const std::string& cmd)
