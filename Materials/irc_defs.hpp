@@ -31,7 +31,8 @@
 #define ERR_KEYSET(source, command)             "467 " + source + " " + command + " :Channel key already set"
 #define ERR_UNKNOWNMODE(source, command)        "472 " + source + " " + command + " :is unknown mode char to me"
 #define ERR_INVITEONLYCHAN(source, command)     "473 " + source + " " + command + " :Cannot join channel (+i)"
-#define ERR_BADCHANNELKEY(source, command, msg)      "475 " + source + " " + command + " " + msg
+#define ERR_BADCHANNELKEY(source, command, msg) "475 " + source + " " + command + " " + msg
+#define ERR_NOCHANMODES(channelName)            "477 # " + channelName + " :TOPIC mode is OFF ('MODE <channel> +t' is needed)"
 #define ERR_BADCHANMASK(source, command)        "476 " + source + " " + command + " :Bad Channel Mask"
 #define ERR_CHANOPRIVSNEEDED(source, command)   "482 " + source + " " + command + " :You're not channel operator"
 

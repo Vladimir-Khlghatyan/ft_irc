@@ -488,7 +488,7 @@ void Command::commandINVITE(Client *C)
     Client* client = _server->getClient(nickName);
     if (!client)
     {
-        std::cout << "size: " << _server->_nickname.size() << std::endl;
+        // std::cout << "size: " << _server->_nickname.size() << std::endl;
         DEBUGGER();
         C->reply(ERR_NOSUCHNICK(C->getNICK(), nickName));
         return ;
@@ -767,6 +767,13 @@ void Command::commandTOPIC(Client *C)
         C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
         DEBUGGER();
         return ;
+    }
+
+    if (channel->topicModeIsOn() == false)
+    {
+        C->sending(ERR_NOCHANMODES(channelName.substr(1)));
+        DEBUGGER();
+        return;
     }
 
     if (_arg.size() == 1)

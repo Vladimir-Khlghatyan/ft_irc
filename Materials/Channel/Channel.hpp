@@ -19,6 +19,7 @@ class Channel
         void setTopic(const std::string& topic);
         void setAdmin(void);
         void setInviteOnly(bool mode);
+        void setTopicMode(bool mode);
 
         std::string getChannelName(void);
         std::string getKey(void);
@@ -35,6 +36,7 @@ class Channel
         bool emptyClients(void);
         bool isOperator(Client *C);
         bool isInviteOnly(void);
+        bool topicModeIsOn(void);
         Client *getClientByNick(std::string nickname);
     
     
@@ -43,6 +45,7 @@ class Channel
     std::string             _key;
     std::string             _topic;
     bool                    _inviteOnly;
+    bool                    _topicMode;
 
     std::vector<Client*>    _clients;
     std::vector<Client*>    _operators;
