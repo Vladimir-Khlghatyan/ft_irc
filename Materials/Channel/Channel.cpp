@@ -43,7 +43,6 @@ std::string Channel::getChannelName(void)
 
 void Channel::joinClient(Client* C)
 {
-    DEBUGGER();
     _clients.push_back(C);
 
     for(size_t i = 0; i < _clients.size(); ++i)
@@ -51,7 +50,6 @@ void Channel::joinClient(Client* C)
 
     this->setAdmin();
     this->nameReply(C);
-    DEBUGGER();
 }
 
 void Channel::kickClient(Client* C, const std::string& reason)
@@ -62,7 +60,6 @@ void Channel::kickClient(Client* C, const std::string& reason)
     std::vector<Client*>::iterator it = std::find(_clients.begin(), _clients.end(), C);
     if (it != _clients.end())
         _clients.erase(it);
-
     it = std::find(_operators.begin(), _operators.end(), C);
     if (it != _operators.end())
         _operators.erase(it);

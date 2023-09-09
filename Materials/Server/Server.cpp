@@ -187,18 +187,20 @@ void    Server::ReadingforDescriptor(void)
                 while (buffer[++i])
                 {
                     it->second->_tmpBuffer += buffer[i];
-                    if (buffer[i] == '\n')
+                }
+                std::cout <<"all=["<<buffer<<"]"<<std::endl;
+                if (it->second->_tmpBuffer.find('\n') != std::string::npos)
+                {
+                    std::cout <<"["<<it->second->_tmpBuffer<<"]"<<std::endl;
+                    it->second->setInputBuffer(it->second->_tmpBuffer);
+                    it->second->splitBufferToList();
+                    it->second->setArguments();
+                    while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
                     {
-                        it->second->setInputBuffer(it->second->_tmpBuffer);
-                        it->second->splitBufferToList();
+                        _command->commandHandler(it->second);
                         it->second->setArguments();
-                        while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
-                        {
-                            _command->commandHandler(it->second);
-                            it->second->setArguments();
-                        }
-                        it->second->_tmpBuffer = "";
                     }
+                    it->second->_tmpBuffer = "";
                 }
 
 
