@@ -325,12 +325,14 @@ void Command::CommandJOIN(Client *C)
         DEBUGGER();
         return ;
     }
+
     if (_arg.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "JOIN"));
         DEBUGGER();
         return ;
     }
+
     if (_arg[0] == "0")
     {
         C->leavingForChannels(NULL);
@@ -380,6 +382,7 @@ void Command::CommandJOIN(Client *C)
             return ;
         }
         C->joinToChannel(channel);
+
         DEBUGGER();
     }
 }
@@ -768,11 +771,14 @@ void Command::commandTOPIC(Client *C)
 
         std::string topic = channel->getTopic();
         if (topic.empty())
-            C->sending(RPL_NOTOPIC(channelName.substr(1))); // channel name without '#' sign to prevent KVirc wrong message
+        {
+            // channel name without '#' (.substr(1)) sign to prevent KVirc wrong message
+            C->sending(RPL_NOTOPIC(channelName.substr(1)));
+        }
         else
         {
-            DEBUGGER();
-            C->sending(RPL_TOPIC(channelName.substr(1), topic)); // channel name without '#' sign to prevent KVirc wrong message
+            // channel name without '#' (.substr(1)) sign to prevent KVirc wrong message
+            C->sending(RPL_TOPIC(channelName.substr(1), topic));
         }
     }
     else

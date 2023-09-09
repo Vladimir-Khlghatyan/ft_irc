@@ -162,8 +162,12 @@ void    Server::ReadingforDescriptor(void)
             // DEBUGGER();
             if (sizeBuff == -1)
             {
-                this->closeFreeALL();
-                throw Server::Excp("ERROR: There was a connection issue");
+                // this->closeFreeALL();
+                // throw Server::Excp("ERROR: There was a connection issue");
+                FD_CLR(it->first, &this->_READ_fds);
+                it->second->setClosed(true);
+                _command->commandQUIT(it->second);
+                std::cout << "ERROR: recv() == -1" << std::endl;
             }
             else if (sizeBuff == 0)
             {
@@ -171,7 +175,6 @@ void    Server::ReadingforDescriptor(void)
                 it->second->setClosed(true);
                 _command->commandQUIT(it->second);
                 std::cout << "The client is disconnected (fd = " << it->first<< ")." << std::endl;
-                --it;
             }
             else
             {

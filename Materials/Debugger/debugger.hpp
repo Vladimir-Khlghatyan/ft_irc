@@ -12,7 +12,7 @@
 #define RESET	"\33[0;m"
 
 #define ERRORLOGGER
-// #undef  ERRORLOGGER
+#undef  ERRORLOGGER
 
 #define DEBUGGER() errorLogger(__FILE__, __func__, __LINE__)
 

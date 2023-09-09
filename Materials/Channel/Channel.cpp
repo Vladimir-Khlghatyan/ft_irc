@@ -49,9 +49,7 @@ void Channel::joinClient(Client* C)
     for(size_t i = 0; i < _clients.size(); ++i)
         _clients[i]->sending(RPL_JOIN(C->getPrefix(), _channelName));
 
-    DEBUGGER();
     this->setAdmin();
-    DEBUGGER();
     this->nameReply(C);
     DEBUGGER();
 }
@@ -60,7 +58,6 @@ void Channel::kickClient(Client* C, const std::string& reason)
 {
     for(size_t i = 0; i < _clients.size(); ++i)
         _clients[i]->sending(RPL_KICK(_admin->getPrefix(), _channelName, C->getNICK(), reason));
-        // this->sendMessag÷e(_clients[i]->getFd(), RPL_KICK(_admin->getPrefix(), _channelName, C->getNICK(), reason));
 
     std::vector<Client*>::iterator it = std::find(_clients.begin(), _clients.end(), C);
     if (it != _clients.end())
@@ -83,10 +80,9 @@ Client *Channel::getClientByNick(std::string nickname)
 {
     std::vector<Client*>::iterator it = _clients.begin();
     for( ; it != _clients.end(); ++it)
-    {
         if ((*it)->getNICK() == nickname)
             return (*it);
-    }
+
     return NULL;
 }
 
@@ -118,12 +114,15 @@ void Channel::sending(Client* C, const std::string& msg, const std::string& cmd)
 
 void Channel::nameReply(Client *C)
 {
+    std::string nickList;
     for (size_t i = 0; i < _clients.size(); ++i)
     {
         std::string prefix = (_clients[i] == _admin) ? "@" : "+";
-        C->sending(RPL_NAMREPLY(C->getNICK(), _channelName, prefix, _clients[i]->getNICK()));
+        nickList += prefix + _clients[i]->getNICK() + "  ";
     }
-    C->sending(RPL_ENDOFNAMES(C->getNICK(), _channelName));
+    // channel name without '#' (.substr(1)) sign to prevent KVirc wrong message
+    C->sending(RPL_NAMREPLY(C->getNICK(), _channelName.substr(1), nickList));
+    C->sending(RPL_ENDOFNAMES(C->getNICK(), _channelName.substr(1)));
 }
 
 void Channel::setAdmin(void)
@@ -141,9 +140,6 @@ void Channel::setAdmin(void)
     // sending message to all users expect admin (starting from index 1)
     for (size_t i = 1; i < _clients.size(); ++i)
         _clients[i]->sending(RPL_MSG(_admin->getPrefix(), "", _channelName, "is the new admin"));
-
-    for(size_t i = 0; i < _clients.size(); ++i)
-            this->nameReply(_clients[i]);
 }
 
 

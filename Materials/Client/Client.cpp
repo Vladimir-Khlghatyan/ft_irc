@@ -23,10 +23,7 @@ Client::Client(int fd, struct sockaddr_in client_addr)
     _hostname = hostname;
 }
 
-
 //-------------------------------------------------------             GET               ----------------------
-
-
 
 int Client::getFd(void)
 {
@@ -90,7 +87,6 @@ std::string	Client::getPrefix(void)
 
     return prefix;
 }
-
 
 //------------------------------------              SET         -----------------------
 
@@ -171,13 +167,10 @@ void Client::joinToChannel(Channel *chanel)
 {
     DEBUGGER();
     _channels.push_back(chanel);
-    DEBUGGER();
     chanel->joinClient(this);
     DEBUGGER();
 }
 //-----------------------------------------------------------           Registered            ---------------------------- 
-
-
 
 void Client::splitBufferToList(void)
 {
@@ -199,7 +192,6 @@ void Client::splitBufferToList(void)
     }
 }
 
-
 void Client::checkForRegistered(void)
 {
     if (!_pass.empty() && !_user.empty() && !_nick.empty() && ! _registered)
@@ -214,20 +206,15 @@ bool Client::isRegistered(void)
     return _registered;
 }
 
-
-
 //------------------------------------------------------------              reply               -------------------------------------
-
 
 void	Client::sending(const std::string& massage)
 {
-DEBUGGER();
+    DEBUGGER();
     std::string buff = massage + "\r\n";
-DEBUGGER();
-
     if (_ifClosed || send(_fd, buff.c_str(), buff.length(), 0) == -1)
         std::cout << "Error: can't send message to client." << std::endl;
-DEBUGGER();
+    DEBUGGER();
 }
 
 void Client::reply(const std::string& reply)
@@ -238,9 +225,7 @@ void Client::reply(const std::string& reply)
         std::cout << "Error: can't send message to client." << std::endl;
 }
 
-
 //-----------------------------------------------------------              living              --------------------------------------
-
 
 void	Client::leavingForChannels(Channel* channel)
 {
@@ -264,12 +249,11 @@ void	Client::leavingForChannels(Channel* channel)
     }
 }
 
-
 void Client::leavingALLChannels(const std::string& massage)
 {
+    DEBUGGER();
     for (std::vector<Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
         (*it)->kickClient(this, massage);
-DEBUGGER();
     _channels.clear();
-DEBUGGER();
+    DEBUGGER();
 }
