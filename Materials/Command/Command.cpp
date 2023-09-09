@@ -147,7 +147,7 @@ void Command::commandPASS(Client* C)
     if (password != _server->getPASS())
     {
         DEBUGGER();
-        C->reply(ERR_PASSWDMISMATCH(C->getNICK()));
+        C->reply( ERR_PASSWDMISMATCH (C->getNICK()) );
         return ;
     }
     C->setPASS(password);
@@ -355,14 +355,17 @@ void Command::CommandJOIN(Client *C)
             DEBUGGER();
             return ;
         }
-        DEBUGGER();
         Channel* channel = _server->getChannel(channelName);
         if (!channel)
+        {
             channel = _server->createChannel(channelName, pass);
+            DEBUGGER();
+        }
 
         if (channel->getClientByNick(C->getNICK()))
         {
             C->reply(ERR_USERONCHANNEL(C->getNICK(), "", channelName));
+            DEBUGGER();
             return ;
         }
         if (channel->isInviteOnly())
@@ -371,8 +374,6 @@ void Command::CommandJOIN(Client *C)
             DEBUGGER();
             return ;
         }
-
-        DEBUGGER();
         if (/*channel->getKey() != "" && */channel->getKey() != pass)
         {
             C->reply(ERR_BADCHANNELKEY(C->getNICK(), channelName, "Cannot join channel (+k)"));
@@ -380,6 +381,7 @@ void Command::CommandJOIN(Client *C)
             return ;
         }
         C->joinToChannel(channel);
+        
         DEBUGGER();
     }
 }
@@ -707,14 +709,16 @@ void Command::commandQUIT(Client *C)
     std::string replay;
     if (!_arg.empty())
     {
+        DEBUGGER();
         int i = 0;
         while(!_arg[i].empty())
             replay += " " + _arg[i++];
     }
+    DEBUGGER();
     C->leavingALLChannels(replay);
     DEBUGGER();
 
-    C->sending(RPL_QUIT(C->getPrefix(), replay));
+    // C->sending(RPL_QUIT(C->getPrefix(), replay));
     DEBUGGER();
     close(C->getFd());
     DEBUGGER();

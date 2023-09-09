@@ -162,8 +162,12 @@ void    Server::ReadingforDescriptor(void)
             // DEBUGGER();
             if (sizeBuff == -1)
             {
-                this->closeFreeALL();
-                throw Server::Excp("ERROR: There was a connection issue");
+                FD_CLR(it->first, &this->_READ_fds);
+                it->second->setClosed(true);
+                _command->commandQUIT(it->second);
+                std::cout << "The client is disconnected (fd = " << it->first<< ")." << std::endl;
+                // this->closeFreeALL();
+                // throw Server::Excp("ERROR: There was a connection issue");
             }
             else if (sizeBuff == 0)
             {
@@ -171,7 +175,6 @@ void    Server::ReadingforDescriptor(void)
                 it->second->setClosed(true);
                 _command->commandQUIT(it->second);
                 std::cout << "The client is disconnected (fd = " << it->first<< ")." << std::endl;
-                --it;
             }
             else
             {
@@ -184,18 +187,20 @@ void    Server::ReadingforDescriptor(void)
                 while (buffer[++i])
                 {
                     it->second->_tmpBuffer += buffer[i];
-                    if (buffer[i] == '\n')
+                }
+                std::cout <<"all=["<<buffer<<"]"<<std::endl;
+                if (it->second->_tmpBuffer.find('\n') != std::string::npos)
+                {
+                    std::cout <<"["<<it->second->_tmpBuffer<<"]"<<std::endl;
+                    it->second->setInputBuffer(it->second->_tmpBuffer);
+                    it->second->splitBufferToList();
+                    it->second->setArguments();
+                    while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
                     {
-                        it->second->setInputBuffer(it->second->_tmpBuffer);
-                        it->second->splitBufferToList();
+                        _command->commandHandler(it->second);
                         it->second->setArguments();
-                        while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
-                        {
-                            _command->commandHandler(it->second);
-                            it->second->setArguments();
-                        }
-                        it->second->_tmpBuffer = "";
                     }
+                    it->second->_tmpBuffer = "";
                 }
 
 

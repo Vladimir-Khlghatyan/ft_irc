@@ -101,7 +101,6 @@ void Client::setClosed(bool x)
 
 void Client::setNICK(std::string nick)
 {
-DEBUGGER();
     sending(":" + _nick + " NICK " + nick);
     _nick = nick;
 }
@@ -169,11 +168,8 @@ void Client::setArguments(void)
 
 void Client::joinToChannel(Channel *chanel)
 {
-    DEBUGGER();
     _channels.push_back(chanel);
-    DEBUGGER();
     chanel->joinClient(this);
-    DEBUGGER();
 }
 //-----------------------------------------------------------           Registered            ---------------------------- 
 
@@ -221,13 +217,10 @@ bool Client::isRegistered(void)
 
 void	Client::sending(const std::string& massage)
 {
-DEBUGGER();
     std::string buff = massage + "\r\n";
-DEBUGGER();
 
     if (_ifClosed || send(_fd, buff.c_str(), buff.length(), 0) == -1)
         std::cout << "Error: can't send message to client." << std::endl;
-DEBUGGER();
 }
 
 void Client::reply(const std::string& reply)
@@ -269,7 +262,5 @@ void Client::leavingALLChannels(const std::string& massage)
 {
     for (std::vector<Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
         (*it)->kickClient(this, massage);
-DEBUGGER();
     _channels.clear();
-DEBUGGER();
 }
