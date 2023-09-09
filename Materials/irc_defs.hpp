@@ -3,8 +3,8 @@
 // Numeric replies 
 #define RPL_WELCOME(source)                     "001 " + source + " :Welcome to the ft_irc Network"
 #define RPL_ENDOFWHO(name, source)              "315 " + name + " " + source + " :End of WHO list"
-#define RPL_NOTOPIC(channel)                    "331 " + channel
-#define RPL_TOPIC(channel, topic)               "332 " + channel + " :" + topic
+#define RPL_NOTOPIC(channelName)                "331 # " + channelName
+#define RPL_TOPIC(channelName, topic)           "332 # " + channelName + " :" + topic
 #define RPL_INVITING(name, nick, ch)            "341 " + name + " " + nick + " " + ch
 #define RPL_WHOREPLY(name, ch, us, hst, nick, fl, re)"352 " + name + " " + ch + " " + us + " " + hst + " ft_irc " + nick + " " + fl + " :1 " + re
 #define RPL_NAMREPLY(name, ch, prefix, nick)    "353 " + name + " = " + ch + " :" + prefix + nick

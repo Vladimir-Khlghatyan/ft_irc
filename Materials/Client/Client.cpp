@@ -225,7 +225,7 @@ DEBUGGER();
     std::string buff = massage + "\r\n";
 DEBUGGER();
 
-    if (!_ifClosed && send(_fd, buff.c_str(), buff.length(), 0) == -1)
+    if (_ifClosed || send(_fd, buff.c_str(), buff.length(), 0) == -1)
         std::cout << "Error: can't send message to client." << std::endl;
 DEBUGGER();
 }

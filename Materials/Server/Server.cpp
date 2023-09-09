@@ -153,13 +153,13 @@ void    Server::ReadingforDescriptor(void)
     
     for( ;it != this->_Clients.end(); ++it) 
     {
-        DEBUGGER();
-        std::cout<<"fd =="<<it->first<<std::endl;
+        // DEBUGGER();
+        // std::cout<<"fd =="<<it->first<<std::endl;
         if (FD_ISSET(it->first, &_READ_fds))
         {
-            DEBUGGER();
+            // DEBUGGER();
             sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
-            DEBUGGER();
+            // DEBUGGER();
             if (sizeBuff == -1)
             {
                 this->closeFreeALL();
@@ -217,17 +217,17 @@ void    Server::ReadingforDescriptor(void)
               
             }
         }
-        DEBUGGER();
+        // DEBUGGER();
         if (FD_ISSET(it->first, &_ER_fds))
         {
             std::cout<<" -------------------------&_ER_fds)) "<<std::endl;
         }
-         DEBUGGER();
+        //  DEBUGGER();
         if (FD_ISSET(it->first, &_WR_fds))
         {
             std::cout<<" +++++++++++++++++++++++++&_WR_fds))"<<std::endl;
         }
-         DEBUGGER();
+        //  DEBUGGER();
     }
     removefromMaps();
 }
@@ -318,7 +318,7 @@ Client* Server::getClient(const std::string& nickname)
     std::map<std::string, int>::iterator it = _nickname.find(nickname);
     if (it == _nickname.end())
     {
-        DEBUGGER();
+        // DEBUGGER();
         return NULL;
     }
     return _Clients.find(it->second)->second;
@@ -330,10 +330,10 @@ Client* Server::getClient(const std::string& nickname)
 
 void Server::updateNickMap(Client* C, std::string &nick)  //   all maps add Client
 {
-DEBUGGER();
+// DEBUGGER();
     if (this->getClient(C->getNICK()))
         _nickname.erase(C->getNICK());
-DEBUGGER();
+// DEBUGGER();
     _nickname[nick] = C->getFd();
 }
 

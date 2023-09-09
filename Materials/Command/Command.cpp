@@ -768,11 +768,11 @@ void Command::commandTOPIC(Client *C)
 
         std::string topic = channel->getTopic();
         if (topic.empty())
-            C->sending(RPL_NOTOPIC(channelName));
+            C->sending(RPL_NOTOPIC(channelName.substr(1))); // channel name without '#' sign to prevent KVirc wrong message
         else
         {
             DEBUGGER();
-            C->sending(RPL_TOPIC(channelName, topic)); // sxal text a tpvum, petq a uxxel
+            C->sending(RPL_TOPIC(channelName.substr(1), topic)); // channel name without '#' sign to prevent KVirc wrong message
         }
     }
     else
