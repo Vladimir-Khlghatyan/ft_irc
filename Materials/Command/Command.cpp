@@ -770,16 +770,11 @@ void Command::commandTOPIC(Client *C)
         DEBUGGER();
 
         std::string topic = channel->getTopic();
-        if (topic.empty())
-        {
-            // channel name without '#' (.substr(1)) sign to prevent KVirc wrong message
+        // channel name without '#' (.substr(1)) to prevent KVirc wrong message
+        if (topic.empty())            
             C->sending(RPL_NOTOPIC(channelName.substr(1)));
-        }
-        else
-        {
-            // channel name without '#' (.substr(1)) sign to prevent KVirc wrong message
+        else            
             C->sending(RPL_TOPIC(channelName.substr(1), topic));
-        }
     }
     else
     {

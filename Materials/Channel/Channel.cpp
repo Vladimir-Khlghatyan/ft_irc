@@ -114,13 +114,20 @@ void Channel::sending(Client* C, const std::string& msg, const std::string& cmd)
 
 void Channel::nameReply(Client *C)
 {
+    // sending TOPIC to new user    
+    std::string topic = this->getTopic();
+    if (topic.empty())            
+        C->sending(RPL_NOTOPIC(_channelName.substr(1))); // channel name without '#' (.substr(1)) to prevent KVirc wrong message
+    else            
+        C->sending(RPL_TOPIC(_channelName.substr(1), topic));
+    
+    // sending channal's users list to new user
     std::string nickList;
     for (size_t i = 0; i < _clients.size(); ++i)
     {
         std::string prefix = (_clients[i] == _admin) ? "@" : "+";
         nickList += prefix + _clients[i]->getNICK() + "  ";
     }
-    // channel name without '#' (.substr(1)) sign to prevent KVirc wrong message
     C->sending(RPL_NAMREPLY(C->getNICK(), _channelName.substr(1), nickList));
     C->sending(RPL_ENDOFNAMES(C->getNICK(), _channelName.substr(1)));
 }
