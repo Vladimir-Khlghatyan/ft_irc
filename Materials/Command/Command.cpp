@@ -116,7 +116,7 @@ void Command::commandHandler(Client* C)
     _arg = C->getArguments();
     std::string cmd = C->getCommand();
     std::map<std::string, FUNC>::iterator it = _commands.begin();
-std::cout<<"command{"<<C->getCommand()<<"}"<<std::endl;
+    std::cout<<"command{"<<C->getCommand()<<"}"<<std::endl;
     for( ; it != _commands.end(); ++it)
     {
         if (it->first == cmd)
@@ -488,7 +488,6 @@ void Command::commandINVITE(Client *C)
     Client* client = _server->getClient(nickName);
     if (!client)
     {
-        // std::cout << "size: " << _server->_nickname.size() << std::endl;
         DEBUGGER();
         C->reply(ERR_NOSUCHNICK(C->getNICK(), nickName));
         return ;
@@ -587,11 +586,15 @@ void Command::commandMODE(Client *C)
         }
         else if (mode == "t" || mode == "+t")
         {
-            // some code
+            DEBUGGER();
+            C->sending(RPL_MODE(C->getPrefix(), channelName, "+t"));
+            channel->setTopicMode(true);
         }
         else if (mode == "-t")
         {
-            // some code
+            DEBUGGER();
+            C->sending(RPL_MODE(C->getPrefix(), channelName, "-t"));
+            channel->setTopicMode(false);
         }
         else if (mode == "k" || mode == "+k")
         {

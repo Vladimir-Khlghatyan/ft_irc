@@ -188,7 +188,7 @@ void    Server::ReadingforDescriptor(void)
                 {
                     it->second->_tmpBuffer += buffer[i];
                 }
-                std::cout <<"all=["<<buffer<<"]"<<std::endl;
+                // std::cout <<"all=["<<buffer<<"]"<<std::endl;
                 if (it->second->_tmpBuffer.find('\n') != std::string::npos)
                 {
                     std::cout <<"["<<it->second->_tmpBuffer<<"]"<<std::endl;
