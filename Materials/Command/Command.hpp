@@ -47,6 +47,7 @@ class Command
         void commandWHO(Client *C);     // 11
         void commandQUIT(Client *C);    // 12
         void commandTOPIC(Client *C);   // 13
+        void commandPART(Client *C);    // 14
     private:
         std::string _password;
         std::map<std::string, FUNC> _commands;

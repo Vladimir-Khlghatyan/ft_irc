@@ -9,7 +9,8 @@ Command::Command(Server *server) : _server(server)
                  &Command::CommandJOIN, &Command::commandPRIVMSG,   // 6, 7
                  &Command::commandKICK, &Command::commandINVITE,    // 8, 9
                  &Command::commandMODE, &Command::commandWHO,       // 10, 11
-                 &Command::commandQUIT, &Command::commandTOPIC};    // 12, 13
+                 &Command::commandQUIT, &Command::commandTOPIC,     // 12, 13
+                 &Command::commandPART};                             // 14
 
     // _commands.insert(std::make_pair("", f[]));
     _commands.insert(std::make_pair("PASS", f[0]));
@@ -26,6 +27,7 @@ Command::Command(Server *server) : _server(server)
     _commands.insert(std::make_pair("WHO", f[11]));
     _commands.insert(std::make_pair("QUIT", f[12]));
     _commands.insert(std::make_pair("TOPIC", f[13]));
+    _commands.insert(std::make_pair("PART", f[14]));
 }
 
 Command::~Command()
@@ -335,7 +337,7 @@ void Command::CommandJOIN(Client *C)
 
     if (_arg[0] == "0")
     {
-        C->leavingForChannels(NULL);
+        C->leavingForChannels(NULL, "");
         _server->checkForCloseCannel();
         DEBUGGER();
         return ;
@@ -462,9 +464,10 @@ void Command::commandKICK(Client *C)
         DEBUGGER();
         channel->kickClient(client, reason);
         DEBUGGER();
-        client->leavingForChannels(channel);
+        client->leavingForChannels(channel, reason);
         DEBUGGER();
     }
+    _server->checkForCloseCannel();
 }
 
 void Command::commandINVITE(Client *C)
@@ -665,6 +668,7 @@ void Command::commandMODE(Client *C)
 void Command::commandWHO(Client *C)
 {
     DEBUGGER();
+
     if (!C->isRegistered())
     {
         C->reply(ERR_NOTREGISTERED(C->getNICK()));
@@ -795,4 +799,48 @@ void Command::commandTOPIC(Client *C)
         std::string topic = _arg[1];
         channel->setTopic(topic);
     }
+}
+
+void Command::commandPART(Client *C)
+{
+    DEBUGGER();
+    if (!C->isRegistered())
+    {
+        C->reply(ERR_NOTREGISTERED(C->getNICK()));
+        DEBUGGER();
+        return ;
+    }
+    if (_arg.empty())
+    {
+        C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "PART"));
+        return ;
+    }
+    std::vector<std::string> removeChannels = stringSplitToVector(_arg[0]);
+    std::vector<std::string>::iterator it = removeChannels.begin();
+    std::string reason = "";
+
+    size_t i = 1;
+    while(i < _arg.size())
+        reason += " " + _arg[i++];
+
+    std::string channelName;
+    Channel* channel;
+    for( ; it != removeChannels.end(); ++it)
+    {
+        channelName = *it;
+
+        channel = _server->getChannel(channelName);
+        if (!channel)
+        {
+            C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName));
+            return ;
+        }
+        if (!channel->isInChannel(C))
+        {
+            C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+            return ;
+        }
+        C->leavingForChannels(channel, reason);
+    }
+    _server->checkForCloseCannel();
 }
