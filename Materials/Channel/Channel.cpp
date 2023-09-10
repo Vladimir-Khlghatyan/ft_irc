@@ -126,9 +126,9 @@ void Channel::nameReply(Client *C)
     // sending TOPIC to new user    
     std::string topic = this->getTopic();
     if (topic.empty())            
-        C->sending(RPL_NOTOPIC(_channelName.substr(1))); // channel name without '#' (.substr(1)) to prevent KVirc wrong message
+        C->sending(RPL_NOTOPIC(_channelName + static_cast<char>(1)));
     else            
-        C->sending(RPL_TOPIC(_channelName.substr(1), topic));
+        C->sending(RPL_TOPIC(_channelName + static_cast<char>(1), topic));
     
     // sending channal's users list to new user
     std::string nickList;
@@ -137,8 +137,8 @@ void Channel::nameReply(Client *C)
         std::string prefix = (_clients[i] == _admin) ? "@" : "+";
         nickList += prefix + _clients[i]->getNICK() + "  ";
     }
-    C->sending(RPL_NAMREPLY(C->getNICK(), _channelName.substr(1), nickList));
-    C->sending(RPL_ENDOFNAMES(C->getNICK(), _channelName.substr(1)));
+    C->sending(RPL_NAMREPLY(C->getNICK(), _channelName + static_cast<char>(1), nickList));
+    C->sending(RPL_ENDOFNAMES(C->getNICK(), _channelName + static_cast<char>(1)));
 }
 
 void Channel::setAdmin(void)
@@ -185,4 +185,19 @@ void Channel::replyWho(Client *C)
         C->sending(replay);
     }
     C->sending(RPL_ENDOFWHO(C->getNICK(), _channelName));
+}
+
+void Channel::addOperator(Client *C)
+{
+    if (isInChannel(C) && !isOperator(C))
+        _operators.push_back(C);
+}
+
+void Channel::removeOperator(Client *C)
+{
+    if (isOperator(C))
+    {
+        std::vector<Client*>::iterator it = std::find(_operators.begin(), _operators.end(), C);
+        _operators.erase(it);
+    }
 }

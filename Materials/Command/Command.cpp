@@ -574,83 +574,109 @@ void Command::commandMODE(Client *C)
     {
         std::string mode = _arg[1];
 
-        if (mode == "i" || mode == "+i")
-        {
-            channel->setInviteOnly(true);
-            C->sending(RPL_MODE(C->getPrefix(), channelName, "+i"));
-        }
-        else if (mode == "-i")
-        {
-            channel->setInviteOnly(false);
-            C->sending(RPL_MODE(C->getPrefix(), channelName, "-i"));
-        }
-        else if (mode == "t" || mode == "+t")
+        // MODE +/- i
+        if (mode == "i" || mode == "+i" || mode == "-i")
         {
             DEBUGGER();
-            C->sending(RPL_MODE(C->getPrefix(), channelName, "+t"));
-            channel->setTopicMode(true);
+            bool condition = (mode == "-i") ? false : true;
+            mode = (mode == "i") ? "+i" : mode;
+
+            channel->setInviteOnly(condition);
+            C->sending(RPL_MODE(C->getPrefix(), channelName, mode));
+            C->reply(RPL_CHANNELMODEIS(channelName, channelName + static_cast<char>(1), mode));
         }
-        else if (mode == "-t")
+        // MODE +/- t
+        else if (mode == "t" || mode == "+t" || mode == "-t")
         {
             DEBUGGER();
-            C->sending(RPL_MODE(C->getPrefix(), channelName, "-t"));
-            channel->setTopicMode(false);
+            bool condition = (mode == "-t") ? false : true;
+            mode = (mode == "t") ? "+t" : mode;
+
+            channel->setTopicMode(condition);
+            C->sending(RPL_MODE(C->getPrefix(), channelName, mode));
+            C->reply(RPL_CHANNELMODEIS(channelName, channelName + static_cast<char>(1), mode));
         }
-        else if (mode == "k" || mode == "+k")
-        {
-            if (channel->getKey() != "")
-            {
-                C->reply(ERR_KEYSET(C->getNICK(), mode));
-                DEBUGGER();
-                return;
-            }
-           
-            std::string key;
-            if (_arg.size() > 2)
-                key = _arg[2];
-            
-            DEBUGGER();
-            C->sending(RPL_MODE(C->getPrefix(), channelName, "+k " + key));
-            channel->setKey(key);
-        }
-        else if (mode == "-k")
+        // MODE +/- k
+        else if (mode == "k" || mode == "+k" || mode == "-k")
         {
             std::string key;
             if (_arg.size() > 2)
                 key = _arg[2];
-            
-            if (channel->getKey() == key)
+
+            if (mode != "-k")
             {
+                if (channel->getKey() != "")
+                {
+                    C->reply(ERR_KEYSET(C->getNICK(), mode));
+                    DEBUGGER();
+                    return;
+                }
+                
                 DEBUGGER();
-                C->sending(RPL_MODE(C->getPrefix(), channelName, "-k "));
-                channel->setKey("");
+                channel->setKey(key);
+                C->sending(RPL_MODE(C->getPrefix(), channelName, "+k " + key));
             }
             else
             {
-                C->reply(ERR_BADCHANNELKEY(C->getNICK(), mode, ":invalid key"));
+                if (channel->getKey() == key)
+                {
+                    DEBUGGER();
+                    channel->setKey("");
+                    C->sending(RPL_MODE(C->getPrefix(), channelName, "-k "));
+                }
+                else
+                {
+                    C->reply(ERR_BADCHANNELKEY(C->getNICK(), mode, ":invalid key"));
+                    DEBUGGER();
+                    return ;
+                }
+            }
+            C->reply(RPL_CHANNELMODEIS(channelName, channelName + static_cast<char>(1), mode));
+        }
+        // MODE +/- o
+        else if (mode == "o" || mode == "+o" || mode == "-o")
+        {
+            if (_arg.size() < 3)
+            {
+                C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "MODE"));
                 DEBUGGER();
                 return ;
             }
+
+            std::string nickname = _arg[2];
+            Client* client = channel->getClientByNick(nickname);
+            if (!client)
+            {
+                C->reply(ERR_USERNOTINCHANNEL(C->getNICK(), nickname, channelName));
+                DEBUGGER();
+                return ;
+            }
+
+            if (mode != "-o")
+            {
+                DEBUGGER();
+                client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, ":you are now a channel operator"));
+                channel->addOperator(client);
+            }
+            else
+            {
+                if (!channel->isAdmin(client) && channel->isOperator(client))
+                {
+                    DEBUGGER();
+                    client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, ":you are no longer a channel operator"));
+                    channel->removeOperator(client);
+                }
+            }
+            C->reply(RPL_CHANNELMODEIS(channelName, channelName + static_cast<char>(1), mode));
         }
-        else if (mode == "o" || mode == "+o")
-        {
-            // some code
-        }
-        else if (mode == "-o")
-        {
-            // some code
-        }
-        else if (mode == "l" || mode == "+l")
-        {
-            // some code
-        }
-        else if (mode == "-l")
+        // MODE +/- l
+        else if (mode == "l" || mode == "+l" || mode == "-l")
         {
             // some code
         }
         else if (mode == "b")
         {
-            // do nothink
+            // do nothink to prevent KVirc error message
         }
         else
         {
@@ -784,11 +810,10 @@ void Command::commandTOPIC(Client *C)
         DEBUGGER();
 
         std::string topic = channel->getTopic();
-        // channel name without '#' (.substr(1)) to prevent KVirc wrong message
         if (topic.empty())            
-            C->sending(RPL_NOTOPIC(channelName.substr(1)));
+            C->sending(RPL_NOTOPIC(channelName + static_cast<char>(1)));
         else            
-            C->sending(RPL_TOPIC(channelName.substr(1), topic));
+            C->sending(RPL_TOPIC(channelName + static_cast<char>(1), topic));
     }
     else
     {

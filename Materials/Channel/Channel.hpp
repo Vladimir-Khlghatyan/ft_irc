@@ -38,6 +38,8 @@ class Channel
         bool isInviteOnly(void);
         bool topicModeIsOn(void);
         Client *getClientByNick(std::string nickname);
+        void addOperator(Client *C);
+        void removeOperator(Client *C);
     
     
     private:
