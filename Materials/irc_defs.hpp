@@ -29,7 +29,8 @@
 #define ERR_ALREADYREGISTERED(source)           "462 " + source + " :You may not reregister"
 #define ERR_PASSWDMISMATCH(source)               source + " :Password incorrect" //464
 #define ERR_KEYSET(source, command)             "467 " + source + " " + command + " :Channel key already set"
-#define ERR_UNKNOWNMODE(source, command)        "472 " + source + " " + command + " :is unknown mode char to me"
+#define ERR_CHANNELISFULL(source, command)      "471 " + source + " " + command + " :Cannot join channel (+l)"
+#define ERR_UNKNOWNMODE(source, command, msg)        "472 " + source + " " + command + " " + msg
 #define ERR_INVITEONLYCHAN(source, command)     "473 " + source + " " + command + " :Cannot join channel (+i)"
 #define ERR_BADCHANNELKEY(source, command, msg) "475 " + source + " " + command + " " + msg
 #define ERR_NOCHANMODES(channelName)            "477 # " + channelName + " :TOPIC mode is OFF ('MODE <channel> +t' is needed)"

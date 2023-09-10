@@ -355,7 +355,7 @@ void Command::CommandJOIN(Client *C)
         pass = it->second;
         if (channelName[0] != '#' && channelName[0] != '&')
         {
-            C->reply(ERR_BADCHANMASK(C->getNICK(), channelName));
+            C->reply(ERR_BADCHANMASK(C->getNICK(), channelName + static_cast<char>(1)));
             DEBUGGER();
             return ;
         }
@@ -368,16 +368,25 @@ void Command::CommandJOIN(Client *C)
 
         if (channel->getClientByNick(C->getNICK()))
         {
-            C->reply(ERR_USERONCHANNEL(C->getNICK(), "", channelName));
+            C->reply(ERR_USERONCHANNEL(C->getNICK(), "", channelName + static_cast<char>(1)));
             DEBUGGER();
             return ;
         }
+
         if (channel->isInviteOnly())
         {
-            C->reply(ERR_INVITEONLYCHAN(C->getNICK(), channelName));
+            C->reply(ERR_INVITEONLYCHAN(C->getNICK(), channelName + static_cast<char>(1)));
             DEBUGGER();
             return ;
         }
+
+        if (channel->channelIsFull())
+        {
+            C->reply(ERR_CHANNELISFULL(C->getNICK(), channelName + static_cast<char>(1)));
+            DEBUGGER();
+            return ;
+        }
+
         if (/*channel->getKey() != "" && */channel->getKey() != pass)
         {
             C->reply(ERR_BADCHANNELKEY(C->getNICK(), channelName, "Cannot join channel (+k)"));
@@ -419,7 +428,7 @@ void Command::commandKICK(Client *C)
         Channel* channel = _server->getChannel(channelName);
         if (!channel)
         {
-            C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName));
+            C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName + static_cast<char>(1)));
             DEBUGGER();
             return ;
         }
@@ -427,27 +436,27 @@ void Command::commandKICK(Client *C)
         Client* client = channel->getClientByNick(nickname);
         if (!client)
         {
-            C->reply(ERR_USERNOTINCHANNEL(C->getNICK(), nickname, channelName));
+            C->reply(ERR_USERNOTINCHANNEL(C->getNICK(), nickname, channelName + static_cast<char>(1)));
             DEBUGGER();
             return ;
         }
 
         if (!channel->isInChannel(C))
         {
-            C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+            C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName + static_cast<char>(1)));
             return ;
         }
 
         if (!channel->isOperator(C))
         {
-            C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+            C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName + static_cast<char>(1)));
             DEBUGGER();
             return ;
         }
 
         if (!(channel->isAdmin(C)) && channel->isAdmin(client))
         {
-            C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+            C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName + static_cast<char>(1)));
             DEBUGGER();
             return ;
         }
@@ -479,12 +488,14 @@ void Command::commandINVITE(Client *C)
         DEBUGGER();
         return ;
     }
+
     if (_arg.empty() || _arg.size() < 2)
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "WHO"));
         DEBUGGER();
         return ;
     }
+
     std::string nickName = _arg[0];
     std::string channelName = _arg[1];
 
@@ -499,34 +510,41 @@ void Command::commandINVITE(Client *C)
     Channel* channel = _server->getChannel(channelName);
     if (!channel)
     {
-        C->reply(ERR_NOSUCHNICK(C->getNICK(), channelName));
+        C->reply(ERR_NOSUCHNICK(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
 
     if (!channel->isInChannel(C))
     {
-        C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+        C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
 
     if (!channel->isOperator(C))
     {
-        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
 
     if (channel->isInChannel(client))
     {
-        C->reply(ERR_USERONCHANNEL(C->getNICK(), nickName, channelName));
+        C->reply(ERR_USERONCHANNEL(C->getNICK(), nickName, channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
 
-    client->sending(RPL_INVITE(C->getPrefix(), nickName, channelName));
-    C->reply(RPL_INVITING(C->getNICK(), nickName, channelName));
+    if (channel->channelIsFull())
+    {
+        C->reply(ERR_CHANNELISFULL(C->getNICK(), channelName + static_cast<char>(1)));
+        DEBUGGER();
+        return ;
+    }
+
+    client->sending(RPL_INVITE(C->getPrefix(), nickName, channelName + static_cast<char>(1)));
+    C->reply(RPL_INVITING(C->getNICK(), nickName, channelName + static_cast<char>(1)));
     channel->joinClient(client);
     DEBUGGER();
 }
@@ -554,21 +572,21 @@ void Command::commandMODE(Client *C)
     Channel* channel = _server->getChannel(channelName);
     if (!channel)
     {
-        C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName));
+        C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
 
     if (!channel->isInChannel(C))
     {
-        C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+        C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
 
     if (!channel->isOperator(C))
     {
-        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
@@ -650,7 +668,7 @@ void Command::commandMODE(Client *C)
             Client* client = channel->getClientByNick(nickname);
             if (!client)
             {
-                C->reply(ERR_USERNOTINCHANNEL(C->getNICK(), nickname, channelName));
+                C->reply(ERR_USERNOTINCHANNEL(C->getNICK(), nickname, channelName + static_cast<char>(1)));
                 DEBUGGER();
                 return ;
             }
@@ -658,7 +676,7 @@ void Command::commandMODE(Client *C)
             if (mode != "-o")
             {
                 DEBUGGER();
-                client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, ":you are now a channel operator"));
+                client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName + static_cast<char>(1), ":you are now a channel operator"));
                 channel->addOperator(client);
             }
             else
@@ -666,7 +684,7 @@ void Command::commandMODE(Client *C)
                 if (!channel->isAdmin(client) && channel->isOperator(client))
                 {
                     DEBUGGER();
-                    client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, ":you are no longer a channel operator"));
+                    client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName + static_cast<char>(1), ":you are no longer a channel operator"));
                     channel->removeOperator(client);
                 }
             }
@@ -675,7 +693,30 @@ void Command::commandMODE(Client *C)
         // MODE +/- l
         else if (mode == "l" || mode == "+l" || mode == "-l")
         {
-            // some code
+            if (mode != "-l")
+            {
+                if (_arg.size() < 3)
+                {
+                    C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "MODE"));
+                    DEBUGGER();
+                    return ;
+                }
+
+                int new_limit = std::atoi(_arg[2].c_str());
+                if (new_limit < 1)
+                {
+                    C->reply(ERR_UNKNOWNMODE(C->getNICK(), mode, " :limit must be greater than 0"));
+                    DEBUGGER();
+                    return;
+                }
+                channel->setChannelLimit(new_limit);
+            }
+            else
+            {
+                channel->setChannelLimit(0); // unlimit
+            }
+            
+            C->reply(RPL_CHANNELMODEIS(channelName, channelName + static_cast<char>(1), mode));
         }
         else if (mode == "b")
         {
@@ -683,7 +724,7 @@ void Command::commandMODE(Client *C)
         }
         else
         {
-            C->reply(ERR_UNKNOWNMODE(C->getNICK(), mode));
+            C->reply(ERR_UNKNOWNMODE(C->getNICK(), mode, " :is unknown mode char to me"));
             DEBUGGER();
             return;
         }
@@ -733,8 +774,7 @@ void Command::commandWHO(Client *C)
         return ;
     }
     std::vector<std::string> atribut = client->getClientAtribut();
-    std::string messag = RPL_WHOREPLY(C->getNICK(), "*", atribut[1], atribut[2], atribut[0], "G", atribut[3]);
-    C->sending(messag);
+    C->sending(RPL_WHOREPLY(C->getNICK(), "*", atribut[1], atribut[2], atribut[0], "G", atribut[3]));
     C->sending(RPL_ENDOFWHO(C->getNICK(), _arg[0]));
 }
 
@@ -784,27 +824,27 @@ void Command::commandTOPIC(Client *C)
     Channel* channel = _server->getChannel(channelName);
     if (!channel)
     {
-        C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName));
+        C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
     if (!channel->isInChannel(C))
     {
-        C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+        C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
 
     if (!channel->isOperator(C))
     {
-        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName));
+        C->reply(ERR_CHANOPRIVSNEEDED(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
 
     if (channel->topicModeIsOn() == false)
     {
-        C->sending(ERR_NOCHANMODES(channelName.substr(1)));
+        C->sending(ERR_NOCHANMODES(channelName));
         DEBUGGER();
         return;
     }
@@ -815,9 +855,9 @@ void Command::commandTOPIC(Client *C)
 
         std::string topic = channel->getTopic();
         if (topic.empty())            
-            C->sending(RPL_NOTOPIC(channelName + static_cast<char>(1)));
+            C->sending(RPL_NOTOPIC(channelName));
         else            
-            C->sending(RPL_TOPIC(channelName + static_cast<char>(1), topic));
+            C->sending(RPL_TOPIC(channelName, topic));
     }
     else
     {
