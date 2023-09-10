@@ -169,13 +169,20 @@ void Channel::setAdmin(void)
 }
 
 
-void Channel::part(Client *C)
+void Channel::part(Client *C , std::string reason)
 {
+    if (std::find(_clients.begin(),_clients.end(),C) == _clients.end())
+        return ;
     for(size_t i = 0; i < _clients.size(); ++i)
-        _clients[i]->sending(RPL_PART(C->getPrefix(), _channelName));
+        if (_clients[i] != C)
+            _clients[i]->sending(RPL_PART(C->getPrefix(), _channelName + reason));
 
     std::vector<Client*>::iterator it = std::find(_clients.begin(), _clients.end(), C);
-    _clients.erase(it);
+    if (it != _clients.end())
+        _clients.erase(it);
+    it = std::find(_operators.begin(), _operators.end(), C);
+    if (it != _operators.end())
+        _operators.erase(it);
     this->setAdmin();
 }
 

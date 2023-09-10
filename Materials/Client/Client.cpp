@@ -223,12 +223,12 @@ void Client::reply(const std::string& reply)
 
 //-----------------------------------------------------------              living              --------------------------------------
 
-void	Client::leavingForChannels(Channel* channel)
+void	Client::leavingForChannels(Channel* channel, std::string reason)
 {
     if (!channel)
     {
         for (std::vector<Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
-            (*it)->part(this);
+            (*it)->part(this, reason);
         _channels.clear();
     }
     else
@@ -237,7 +237,7 @@ void	Client::leavingForChannels(Channel* channel)
         {
             if (*it == channel)
             {
-                (*it)->part(this);
+                (*it)->part(this, reason);
                 _channels.erase(it);
                 break;
             }
