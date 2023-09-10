@@ -543,7 +543,7 @@ void Command::commandINVITE(Client *C)
         return ;
     }
 
-    client->sending(RPL_INVITE(C->getPrefix(), nickName, channelName + static_cast<char>(1)));
+    client->sending(RPL_INVITE(C->getPrefix(), nickName, channelName));
     C->reply(RPL_INVITING(C->getNICK(), nickName, channelName + static_cast<char>(1)));
     channel->joinClient(client);
     DEBUGGER();
@@ -676,7 +676,7 @@ void Command::commandMODE(Client *C)
             if (mode != "-o")
             {
                 DEBUGGER();
-                client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName + static_cast<char>(1), ":you are now a channel operator"));
+                client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, "you are now a channel operator"));
                 channel->addOperator(client);
             }
             else
@@ -684,7 +684,7 @@ void Command::commandMODE(Client *C)
                 if (!channel->isAdmin(client) && channel->isOperator(client))
                 {
                     DEBUGGER();
-                    client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName + static_cast<char>(1), ":you are no longer a channel operator"));
+                    client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, "you are no longer a channel operator"));
                     channel->removeOperator(client);
                 }
             }

@@ -168,8 +168,7 @@ void Channel::setAdmin(void)
         _clients[i]->sending(RPL_MSG(_admin->getPrefix(), "", _channelName, "is the new admin"));
 }
 
-
-void Channel::part(Client *C , std::string reason)
+void Channel::part(Client *C, std::string reason)
 {
     if (std::find(_clients.begin(),_clients.end(),C) == _clients.end())
         return ;
