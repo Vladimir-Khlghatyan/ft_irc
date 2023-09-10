@@ -7,6 +7,7 @@ Channel::Channel(const std::string& channelName, const std::string& key) \
 { 
     _inviteOnly = false;
     _topicMode = true;
+    _limit = 0; // 0 limit means unlimit
 }
 
 Channel::~Channel()
@@ -32,6 +33,15 @@ void Channel::setTopicMode(bool mode)
     _topicMode = mode;
 }
 
+void Channel::setChannelLimit(int limit)
+{
+    _limit = limit;
+}
+
+std::string Channel::getChannelName(void)
+{
+    return _channelName;
+}
 
 std::string Channel::getKey(void)
 {
@@ -43,9 +53,9 @@ std::string Channel::getTopic(void)
     return _topic;
 }
 
-std::string Channel::getChannelName(void)
+int Channel::getChannelLimit(void)
 {
-    return _channelName;
+    return _limit;
 }
 
 void Channel::joinClient(Client* C)
@@ -200,4 +210,12 @@ void Channel::removeOperator(Client *C)
         std::vector<Client*>::iterator it = std::find(_operators.begin(), _operators.end(), C);
         _operators.erase(it);
     }
+}
+
+bool Channel::channelIsFull(void)
+{
+    if (_limit == 0)
+        return false;
+
+    return _limit <= static_cast<int>(_clients.size());
 }
