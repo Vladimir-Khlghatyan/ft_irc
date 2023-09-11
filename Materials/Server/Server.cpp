@@ -128,11 +128,11 @@ void    Server::ClientConnect(void)
             }
             else if (client_fd)
             {
-                // if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1)
-                // {
-                //     close(_server_fd);
-                //     throw Server::Excp("Error: setting client fd to non-blocking mode failed!");
-                // }
+                if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1)
+                {
+                    close(_server_fd);
+                    throw Server::Excp("Error: setting client fd to non-blocking mode failed!");
+                }
 
                 std::cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << std::endl;
 
