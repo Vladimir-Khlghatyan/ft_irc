@@ -175,7 +175,7 @@ void Command::commandNICK(Client* C)
         return ;
     }
     Client* client = _server->getClient(nick);
-    if (client && client != C)
+    if (client)
     {
         C->reply(ERR_NICKNAMEINUSE(C->getNICK(), nick));
         return ;
@@ -471,7 +471,7 @@ void Command::commandKICK(Client *C)
             reason = "No reason specified.";
 
         DEBUGGER();
-        channel->kickClient(client, reason);
+        channel->kickClient(client, reason, client->ifClosed());
         DEBUGGER();
         client->leavingForChannels(channel, reason);
         DEBUGGER();
@@ -774,7 +774,22 @@ void Command::commandWHO(Client *C)
         return ;
     }
     std::vector<std::string> atribut = client->getClientAtribut();
-    C->sending(RPL_WHOREPLY(C->getNICK(), "*", atribut[1], atribut[2], atribut[0], "G", atribut[3]));
+    std::string message;
+    std::string replay;
+    if (!_arg.empty())
+    {
+        DEBUGGER();
+        int i = 0;
+        while(!_arg[i].empty())
+            message += " " + _arg[i++];
+    }
+    if (message.find('a') != std::string::npos)
+        replay = "G";
+    else
+        replay = "H";
+    if (message.find('o') != std::string::npos)
+        replay += "@";
+    C->sending(RPL_WHOREPLY(C->getNICK(), "*", atribut[1], atribut[2], atribut[0], replay, atribut[3]));
     C->sending(RPL_ENDOFWHO(C->getNICK(), _arg[0]));
 }
 
@@ -798,7 +813,7 @@ void Command::commandQUIT(Client *C)
     DEBUGGER();
     close(C->getFd());
     DEBUGGER();
-    FD_CLR(C->getFd(), &_server->_READ_fds);
+    FD_CLR(C->getFd(), &_server->Desc._READ_fds);
     _server->addRemoveFd(C);
     DEBUGGER();
 }

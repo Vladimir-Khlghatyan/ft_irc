@@ -78,37 +78,33 @@ void    Server::bindListnServer(void)
 
 void    Server::ClientConnect(void)
 {
-    FD_ZERO(&_READ_fds);    // initializing a descriptor set _READ_fds to the null set
-    FD_ZERO(&_WR_fds);      // initializing a descriptor set _WR_fds to the null set
-    FD_ZERO(&_ER_fds);      // initializing a descriptor set _ER_fds to the null set
+    FD_ZERO(&Desc._READ_fds);    // initializing a descriptor set Desc._READ_fds to the null set
+    FD_ZERO(&Desc._WR_fds);      // initializing a descriptor set Desc._WR_fds to the null set
+    FD_ZERO(&Desc._ER_fds);      // initializing a descriptor set Desc._ER_fds to the null set
 
     _timeout.tv_sec = 2;    // waiting time (2 sec.)
     _timeout.tv_usec = 0;
 
-    FD_SET(_server_fd, &_WR_fds); // adding the file descriptor _server_fd to the _WR_fds set.
+    FD_SET(_server_fd, &Desc._WR_fds); // adding the file descriptor _server_fd to the Desc._WR_fds set.
 
     std::map<int, Client*>::iterator it = this->_Clients.begin();
     for(; it != _Clients.end(); ++it)
     {
-        FD_SET(it->first, &_READ_fds);
-        // FD_SET(it->first, &_WR_fds); // because clients can always write
-        FD_SET(it->first, &_ER_fds);
+        FD_SET(it->first, &Desc._READ_fds);
+        // FD_SET(it->first, &Desc._WR_fds); // because clients can always write
+        FD_SET(it->first, &Desc._ER_fds);
     }
     _max_fd = _Clients.rbegin()->first + 1;
 
-    _ready_FD = select(_max_fd, &_READ_fds, &_WR_fds, &_ER_fds, &_timeout);
+    _ready_FD = select(_max_fd, &Desc._READ_fds, &Desc._WR_fds, &Desc._ER_fds, &_timeout);
 
     // ready for the specified events
     if (_ready_FD == -1)
     {
        this->closeFreeALL();
-       throw Server::Excp("Error occurred during 'select' operation");
+       throw Server::Excp("Error :occurred during 'select' operation");
     }
-    else if (_ready_FD == 0)
-    {
-        // std::cout<< "No activity within 2 seconds." << std::endl;
-    }
-    else
+    else if (_ready_FD)
     {
         struct sockaddr_in client_addr;
         client_addr.sin_family = AF_INET;
@@ -116,7 +112,7 @@ void    Server::ClientConnect(void)
         socklen_t len = sizeof(client_addr);
 
         // Check if the listening socket is ready
-        if (FD_ISSET(_server_fd, &_READ_fds))
+        if (FD_ISSET(_server_fd, &Desc._READ_fds))
         {
             int client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &len);
 
@@ -137,7 +133,6 @@ void    Server::ClientConnect(void)
                 std::cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << std::endl;
 
                 _Clients[client_fd] = new Client(client_fd, client_addr);
-
             }
         }
     }
@@ -154,24 +149,22 @@ void    Server::ReadingforDescriptor(void)
     for( ;it != this->_Clients.end(); ++it) 
     {
         // DEBUGGER();
-        // std::cout<<"fd =="<<it->first<<std::endl;
-        if (FD_ISSET(it->first, &_READ_fds))
+        if (FD_ISSET(it->first, &Desc._READ_fds))
         {
             // DEBUGGER();
             sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
             // DEBUGGER();
             if (sizeBuff == -1)
             {
-                // this->closeFreeALL();
-                // throw Server::Excp("ERROR: There was a connection issue");
-                FD_CLR(it->first, &this->_READ_fds);
+                FD_CLR(it->first, &this->Desc._READ_fds);
                 it->second->setClosed(true);
-                _command->commandQUIT(it->second);
-                std::cout << "ERROR: recv() == -1" << std::endl;
+                _ifSend = true;                                // Unexpected kick
+                addRemoveFd(it->second);
+                std::cout << "The client is disconnected Unexpected (fd = " << it->first<< ")." << std::endl;
             }
             else if (sizeBuff == 0)
             {
-                FD_CLR(it->first, &this->_READ_fds);
+                FD_CLR(it->first, &this->Desc._READ_fds);
                 it->second->setClosed(true);
                 _command->commandQUIT(it->second);
                 std::cout << "The client is disconnected (fd = " << it->first<< ")." << std::endl;
@@ -182,7 +175,7 @@ void    Server::ReadingforDescriptor(void)
                 //:Name COMMAND parameter list
                 // std::cout<< "BUFFER[" << it->first <<"]" << buffer;
                 // std::cout<< "BUFFER[" << buffer <<"]" <<std::endl;
-                
+                it->second->setClosed(_ifSend);
                 int i = -1;
                 while (buffer[++i])
                 {
@@ -223,18 +216,19 @@ void    Server::ReadingforDescriptor(void)
             }
         }
         // DEBUGGER();
-        if (FD_ISSET(it->first, &_ER_fds))
+        if (FD_ISSET(it->first, &Desc._ER_fds))
         {
-            std::cout<<" -------------------------&_ER_fds)) "<<std::endl;
+            std::cout<<" -------------------------&Desc._ER_fds)) "<<std::endl;
         }
         //  DEBUGGER();
-        if (FD_ISSET(it->first, &_WR_fds))
+        if (FD_ISSET(it->first, &Desc._WR_fds))
         {
-            std::cout<<" +++++++++++++++++++++++++&_WR_fds))"<<std::endl;
+            std::cout<<" +++++++++++++++++++++++++&Desc._WR_fds))"<<std::endl;
         }
         //  DEBUGGER();
     }
     removefromMaps();
+    _ifSend = false;
 }
 
 //-------------------------------------------------      Manag Client   -------------------
@@ -269,8 +263,11 @@ void Server::removefromMaps()
         std::map<std::string, int>::iterator it = _nickname.begin();
         for( ; it != _nickname.end(); ++it)
         {
+            DEBUGGER();
             if (it->first == C->getNICK())
             {
+                DEBUGGER();
+                C->leavingALLChannelsUnexpected();
                 _nickname.erase(it);
                 break ;
             }
@@ -280,6 +277,8 @@ void Server::removefromMaps()
         {
             if (it1->second == C)
             {
+                DEBUGGER();
+                close(it1->first);
                 delete C;
                 _Clients.erase(it1);
                 break ;
@@ -308,6 +307,7 @@ void    Server::start(void)
         this->ClientConnect();
         this->ReadingforDescriptor();
     }
+    closeFreeALL();
     std::cout << "END :Server stopped" << std::endl;
 }
 

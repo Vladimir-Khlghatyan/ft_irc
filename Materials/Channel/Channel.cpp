@@ -65,14 +65,15 @@ void Channel::joinClient(Client* C)
     for(size_t i = 0; i < _clients.size(); ++i)
         _clients[i]->sending(RPL_JOIN(C->getPrefix(), _channelName));
 
-    this->setAdmin();
+    this->setAdmin(C->ifClosed());
     this->nameReply(C);
 }
 
-void Channel::kickClient(Client* C, const std::string& reason)
+void Channel::kickClient(Client* C, const std::string& reason, bool flagClosed)
 {
     for(size_t i = 0; i < _clients.size(); ++i)
-        _clients[i]->sending(RPL_KICK(_admin->getPrefix(), _channelName, C->getNICK(), reason));
+        if (flagClosed)
+            _clients[i]->sending(RPL_KICK(_admin->getPrefix(), _channelName, C->getNICK(), reason));
 
     std::vector<Client*>::iterator it = std::find(_clients.begin(), _clients.end(), C);
     if (it != _clients.end())
@@ -80,7 +81,7 @@ void Channel::kickClient(Client* C, const std::string& reason)
     it = std::find(_operators.begin(), _operators.end(), C);
     if (it != _operators.end())
         _operators.erase(it);
-    this->setAdmin();
+    this->setAdmin(flagClosed);
 }
 
 bool Channel::isInChannel(Client* C)
@@ -151,21 +152,23 @@ void Channel::nameReply(Client *C)
     C->sending(RPL_ENDOFNAMES(C->getNICK(), _channelName + static_cast<char>(1)));
 }
 
-void Channel::setAdmin(void)
+void Channel::setAdmin(bool flagClosed)
 {
     if (_clients.empty() || _admin == _clients[0])
         return;
 
     _admin = _clients[0];
     if (std::find(_operators.begin(), _operators.end(), _admin) == _operators.end())
-        _operators.push_back(_admin);    
+        _operators.push_back(_admin); 
 
     // sending message to admin
-    _admin->sending(RPL_MSG(_admin->getPrefix(), "", _channelName, "you are the new admin"));
+    if (flagClosed)
+        _admin->sending(RPL_MSG(_admin->getPrefix(), "", _channelName, "you are the new admin"));
 
     // sending message to all users expect admin (starting from index 1)
     for (size_t i = 1; i < _clients.size(); ++i)
-        _clients[i]->sending(RPL_MSG(_admin->getPrefix(), "", _channelName, "is the new admin"));
+        if (flagClosed)
+            _clients[i]->sending(RPL_MSG(_admin->getPrefix(), "", _channelName, "is the new admin"));
 }
 
 void Channel::part(Client *C, std::string reason)
@@ -182,7 +185,7 @@ void Channel::part(Client *C, std::string reason)
     it = std::find(_operators.begin(), _operators.end(), C);
     if (it != _operators.end())
         _operators.erase(it);
-    this->setAdmin();
+    this->setAdmin(C->ifClosed());
 }
 
 bool Channel::emptyClients(void)

@@ -48,6 +48,7 @@ class Client
         void sending(const std::string& massage);
         void reply(const std::string& reply);
         void leavingALLChannels(const std::string& massage);
+        void leavingALLChannelsUnexpected(void);
 
         std::string _tmpBuffer;
         

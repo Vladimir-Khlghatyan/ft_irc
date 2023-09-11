@@ -17,7 +17,7 @@ class Channel
     public:
         void setKey(const std::string& key);
         void setTopic(const std::string& topic);
-        void setAdmin(void);
+        void setAdmin(bool flagClosed);
         void setInviteOnly(bool mode);
         void setTopicMode(bool mode);
         void setChannelLimit(int limit);
@@ -28,7 +28,7 @@ class Channel
         int getChannelLimit(void);
 
         void joinClient(Client* C);
-        void kickClient(Client* C, const std::string& reason);
+        void kickClient(Client* C, const std::string& reason, bool flagClosed);
         bool isInChannel(Client* C);
         void replyWho(Client* C);
         bool isAdmin(Client* C);
@@ -42,7 +42,7 @@ class Channel
         Client *getClientByNick(std::string nickname);
         void addOperator(Client *C);
         void removeOperator(Client *C);
-        bool channelIsFull(void);    
+        bool channelIsFull(void);
     
     private:
     std::string             _channelName;

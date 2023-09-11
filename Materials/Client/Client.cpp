@@ -249,6 +249,14 @@ void Client::leavingALLChannels(const std::string& massage)
 {
     DEBUGGER();
     for (std::vector<Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
-        (*it)->kickClient(this, massage);
+        (*it)->kickClient(this, massage, _ifClosed);
+    _channels.clear();
+}
+
+void Client::leavingALLChannelsUnexpected(void)
+{
+    DEBUGGER();
+    for (std::vector<Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+        (*it)->kickClient(this, "", _ifClosed);
     _channels.clear();
 }

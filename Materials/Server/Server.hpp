@@ -45,6 +45,9 @@ class Server
         Channel *createChannel(const std::string &name, const std::string &pass);
         void removefromMaps(void);
         void addRemoveFd(Client* C);
+        bool isExit(void);
+        void setExit(bool exit);
+
 
         std::string getPASS(void);
         Client* getClient(const std::string& nickname);
@@ -57,23 +60,27 @@ class Server
 			private:
 				char *_s;
 		};
+        struct selectDescription 
+        {
+            fd_set      _WR_fds;
+            fd_set      _READ_fds;
+            fd_set      _ER_fds;
+        } Desc;
 
-    // private:
+        bool                        _ifSend;
+    private:
         struct sockaddr_in          _server_addr;
+        struct timeval              _timeout;
+        std::map<int, Client*>      _Clients;   // fd : client
+        std::map<std::string, int>  _nickname;  // nick : fd
+        std::set<Channel*>          _channels;
+        std::stack<Client*>         _removedFDs;
         std::string                 _password;
+        Command*                    _command;
         unsigned short              _port;
         int                         _max_fd;
         int                         _server_fd;
         int                         _ready_FD;
-        struct timeval              _timeout;
-        fd_set                      _WR_fds;
-        fd_set                      _READ_fds;
-        fd_set                      _ER_fds;
-        std::map<int, Client*>      _Clients;   // fd : client
-        std::map<std::string, int>  _nickname;  // nick : fd
-        Command*                    _command;
-        std::set<Channel*>          _channels;
-        std::stack<Client*>         _removedFDs;
 };
 
 bool argsAreValid(std::string port, std::string password);
