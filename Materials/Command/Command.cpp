@@ -366,9 +366,9 @@ void Command::CommandJOIN(Client *C)
             DEBUGGER();
         }
 
-        if (channel->getClientByNick(C->getNICK()))
+        if (channel->isInChannel(C))
         {
-            C->reply(ERR_USERONCHANNEL(C->getNICK(), "", channelName + static_cast<char>(1)));
+            C->reply(ERR_USERONCHANNEL(C->getNICK(), C->getNICK(), channelName + static_cast<char>(1)));
             DEBUGGER();
             return ;
         }
@@ -676,7 +676,7 @@ void Command::commandMODE(Client *C)
             if (mode != "-o")
             {
                 DEBUGGER();
-                client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, "you are now a channel operator"));
+                client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, ":you are now a channel operator"));
                 channel->addOperator(client);
             }
             else
@@ -684,7 +684,7 @@ void Command::commandMODE(Client *C)
                 if (!channel->isAdmin(client) && channel->isOperator(client))
                 {
                     DEBUGGER();
-                    client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, "you are no longer a channel operator"));
+                    client->sending(RPL_MSG(C->getPrefix(), "MODE", channelName, ":you are no longer a channel operator"));
                     channel->removeOperator(client);
                 }
             }
@@ -854,10 +854,16 @@ void Command::commandTOPIC(Client *C)
         DEBUGGER();
 
         std::string topic = channel->getTopic();
-        if (topic.empty())            
-            C->sending(RPL_NOTOPIC(channelName));
-        else            
-            C->sending(RPL_TOPIC(channelName, topic));
+        if (topic.empty())
+        {
+            DEBUGGER();
+            C->sending(RPL_NOTOPIC(channelName) + static_cast<char>(1));
+        }        
+        else 
+        {
+            DEBUGGER();
+            C->sending(RPL_TOPIC(channelName + static_cast<char>(1), topic));
+        }          
     }
     else
     {
