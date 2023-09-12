@@ -207,7 +207,6 @@ void Command::commandUSER(Client *C)
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "USER"));
         return ;
     }
-
     C->setUSER(_arg[0], _arg[3]);
     C->checkForRegistered();
 }
@@ -409,7 +408,7 @@ void Command::commandKICK(Client *C)
         DEBUGGER();
         return ;
     }
-    if (_arg.empty() || _arg.size() < 2)
+    if (_arg.size() < 2)
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "KICK"));
         DEBUGGER();
@@ -489,7 +488,7 @@ void Command::commandINVITE(Client *C)
         return ;
     }
 
-    if (_arg.empty() || _arg.size() < 2)
+    if (_arg.size() < 2)
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "WHO"));
         DEBUGGER();
@@ -756,7 +755,7 @@ void Command::commandWHO(Client *C)
         Channel* channel = _server->getChannel(_arg[0]);
         if (!channel)
         {
-            C->reply(ERR_NOSUCHNICK(C->getNICK(), _arg[0]));
+            C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), _arg[0]));
             return ;
         }
         if (!channel->isInChannel(C))
@@ -764,7 +763,8 @@ void Command::commandWHO(Client *C)
             C->reply(ERR_NOTONCHANNEL(C->getNICK(), _arg[0]));
             return ;
         }
-        channel->replyWho(C);
+        int mode = (_arg.size() > 1 && _arg[1] == "o") ? 1 : 0;
+        channel->replyWho(C, mode);
         return ;
     }
 
@@ -775,22 +775,8 @@ void Command::commandWHO(Client *C)
         return ;
     }
     std::vector<std::string> atribut = client->getClientAtribut();
-    std::string message;
-    std::string replay;
-    if (!_arg.empty())
-    {
-        DEBUGGER();
-        int i = 0;
-        while(!_arg[i].empty())
-            message += " " + _arg[i++];
-    }
-    if (message.find('a') != std::string::npos)
-        replay = "G";
-    else
-        replay = "H";
-    if (message.find('o') != std::string::npos)
-        replay += "@";
-    C->sending(RPL_WHOREPLY(C->getNICK(), "*", atribut[1], atribut[2], atribut[0], replay, atribut[3]));
+
+    C->sending(RPL_WHOREPLY(C->getNICK(), "*", atribut[1], atribut[2], atribut[0], "H", atribut[3]));
     C->sending(RPL_ENDOFWHO(C->getNICK(), _arg[0]));
 }
 
@@ -905,12 +891,16 @@ void Command::commandPART(Client *C)
      DEBUGGER();
     std::vector<std::string> removeChannels = stringSplitToVector(_arg[0]);
     std::vector<std::string>::iterator it = removeChannels.begin();
-    std::string reason = "";
- DEBUGGER();
-    size_t i = 1;
-    while(i < _arg.size())
-        reason += " " + _arg[i++];
- DEBUGGER();
+    std::string reason;
+    DEBUGGER();
+    if (_arg.size())
+    {
+        DEBUGGER();
+        reason = _arg[0];
+        for(size_t i = 1; i < _arg.size(); ++i)
+            reason += " " + _arg[i];
+    }
+    DEBUGGER();
     std::string channelName;
     Channel* channel;
     for( ; it != removeChannels.end(); ++it)

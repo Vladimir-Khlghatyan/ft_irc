@@ -30,7 +30,7 @@ class Channel
         void joinClient(Client* C);
         void kickClient(Client* C, const std::string& reason, bool flagClosed);
         bool isInChannel(Client* C);
-        void replyWho(Client* C);
+        void replyWho(Client* C, int mode);
         bool isAdmin(Client* C);
         void sending(Client* C, const std::string& msg, const std::string& cmd);
         void nameReply(Client *C);

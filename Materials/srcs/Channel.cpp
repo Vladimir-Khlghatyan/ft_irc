@@ -193,7 +193,7 @@ bool Channel::emptyClients(void)
     return _clients.empty();
 }
 
-void Channel::replyWho(Client *C)
+void Channel::replyWho(Client *C, int mode)
 {
     std::string replay;
     std::vector<std::string> atribut;
@@ -201,7 +201,9 @@ void Channel::replyWho(Client *C)
     {
         atribut = _clients[i]->getClientAtribut();
         replay = RPL_WHOREPLY(C->getNICK(), _channelName, atribut[1], atribut[2], atribut[0], "H", atribut[3]);
-        C->sending(replay);
+
+        if (!mode || this->isOperator(C))
+            C->sending(replay);
     }
     C->sending(RPL_ENDOFWHO(C->getNICK(), _channelName));
 }

@@ -7,7 +7,7 @@
 #define RPL_NOTOPIC(channelName)                "331 # " + channelName
 #define RPL_TOPIC(channelName, topic)           "332 # " + channelName + " :" + topic
 #define RPL_INVITING(name, nick, ch)            "341 " + name + " " + nick + " " + ch
-#define RPL_WHOREPLY(name, ch, us, hst, nick, fl, re)"352 " + name + " " + ch + " " + us + " " + hst + " ft_irc " + nick + " " + fl + " :1 " + re
+#define RPL_WHOREPLY(name, ch, us, hst, nick, fl, re)"352 " + name + " " + ch + " " + us + " " + hst + " ft_irc " + nick + " " + fl + " :" + re
 #define RPL_NAMREPLY(nick, ch, nickList)        "353 " + nick + " = " + ch + " :" + nickList
 #define RPL_ENDOFNAMES(name, ch)                "366 " + name +  " " + ch + " :End of /NAMES list"
 
