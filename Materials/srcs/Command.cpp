@@ -1,8 +1,14 @@
 #include "Command.hpp"
 #include "debugger.hpp"
+#include "Bot.hpp"
 
 Command::Command(Server *server) : _server(server)
 {
+    //------         bonus           ------
+
+    _bot = new Bot();
+
+    //------        Mandatory   --------
     FUNC f[] = {&Command::commandPASS, &Command::commandNICK,       // 0, 1
                  &Command::commandUSER, &Command::CommandPING,      // 2, 3
                  &Command::CommandPONG, &Command::CommandCAP,       // 4, 5
@@ -32,7 +38,7 @@ Command::Command(Server *server) : _server(server)
 
 Command::~Command()
 {
-
+    delete _bot;
 }
 
 void Command::setPass(std::string password)
@@ -271,7 +277,19 @@ void Command::commandPRIVMSG(Client *C)
                 return ;
             }
             DEBUGGER();
-            channel->sending(C, message, "PRIVMSG");
+            std::cout<<"["<<_arg[1]<<"]"<<std::endl;
+            if (_arg[1].find(' ') != std::string::npos
+                && _arg[1].substr(0,_arg[1].find(' ')) != "Bot" && _arg.size() > 2)
+            {
+                _bot->Fetch(_arg, message);
+                C->sending(RPL_MSG(C->getPrefix(), "PRIVMSG", C->getNICK(), message));
+                DEBUGGER();
+            }
+            else
+            {
+                channel->sending(C, message, "PRIVMSG");
+            DEBUGGER();
+            }
         }
         else
         {

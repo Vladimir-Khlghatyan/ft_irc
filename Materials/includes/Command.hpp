@@ -9,7 +9,9 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "irc_defs.hpp"
+#include "Bot.hpp"
 
+class Bot;
 class Server;
 class Command;
 
@@ -53,4 +55,5 @@ class Command
         std::map<std::string, FUNC> _commands;
         std::vector<std::string> _arg;
         Server*  _server;
+        Bot*     _bot;
 };
