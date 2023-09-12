@@ -1,5 +1,5 @@
 #include "Command.hpp"
-#include "../Debugger/debugger.hpp"
+#include "debugger.hpp"
 
 Command::Command(Server *server) : _server(server)
 {
@@ -118,7 +118,7 @@ void Command::commandHandler(Client* C)
     _arg = C->getArguments();
     std::string cmd = C->getCommand();
     std::map<std::string, FUNC>::iterator it = _commands.begin();
-    std::cout<<"command{"<<C->getCommand()<<"}"<<std::endl;
+    std::cout<<"command{"<<C->getCommand()<<"}"<<std::endl;//-------------------------------------------------------------------
     for( ; it != _commands.end(); ++it)
     {
         if (it->first == cmd)
@@ -721,6 +721,7 @@ void Command::commandMODE(Client *C)
         else if (mode == "b")
         {
             // do nothink to prevent KVirc error message
+            DEBUGGER();
         }
         else
         {
@@ -797,19 +798,18 @@ void Command::commandQUIT(Client *C)
 {
     DEBUGGER();
 
-    std::string replay;
+    std::string reply;
     if (!_arg.empty())
     {
         DEBUGGER();
-        int i = 0;
-        while(!_arg[i].empty())
-            replay += " " + _arg[i++];
+        reply = _arg[0];
+        for(size_t i = 1; i < _arg.size(); ++i)
+            reply += " " + _arg[i];
     }
     DEBUGGER();
-    C->leavingALLChannels(replay);
+    C->leavingALLChannels(reply);
     DEBUGGER();
 
-    // C->sending(RPL_QUIT(C->getPrefix(), replay));
     DEBUGGER();
     close(C->getFd());
     DEBUGGER();
@@ -896,19 +896,21 @@ void Command::commandPART(Client *C)
         DEBUGGER();
         return ;
     }
+     DEBUGGER();
     if (_arg.empty())
     {
         C->reply(ERR_NEEDMOREPARAMS(C->getNICK(), "PART"));
         return ;
     }
+     DEBUGGER();
     std::vector<std::string> removeChannels = stringSplitToVector(_arg[0]);
     std::vector<std::string>::iterator it = removeChannels.begin();
     std::string reason = "";
-
+ DEBUGGER();
     size_t i = 1;
     while(i < _arg.size())
         reason += " " + _arg[i++];
-
+ DEBUGGER();
     std::string channelName;
     Channel* channel;
     for( ; it != removeChannels.end(); ++it)
@@ -919,14 +921,18 @@ void Command::commandPART(Client *C)
         if (!channel)
         {
             C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName));
+             DEBUGGER();
             return ;
         }
         if (!channel->isInChannel(C))
         {
             C->reply(ERR_NOTONCHANNEL(C->getNICK(), channelName));
+             DEBUGGER();
             return ;
         }
         C->leavingForChannels(channel, reason);
     }
+     DEBUGGER();
     _server->checkForCloseCannel();
+     DEBUGGER();
 }

@@ -6,9 +6,9 @@
 #include <vector>
 #include <map>
 #include <string>
-#include "../Client/Client.hpp"
-#include "../Server/Server.hpp"
-#include "../irc_defs.hpp"
+#include "Client.hpp"
+#include "Server.hpp"
+#include "irc_defs.hpp"
 
 class Server;
 class Command;

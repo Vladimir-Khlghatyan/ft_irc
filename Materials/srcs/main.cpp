@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include "../Debugger/debugger.hpp"
+#include "debugger.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -9,10 +9,10 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // if (!argsAreValid(argv[1], argv[2])) // test
-    // {
-    //     return 2;
-    // }
+    if (!argsAreValid(argv[1], argv[2])) // test
+    {
+        return 2;
+    }
     try{
         Server s(argv[1], argv[2]);
         s.start();

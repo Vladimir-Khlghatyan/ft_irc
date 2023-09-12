@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include "../Debugger/debugger.hpp"
+#include "debugger.hpp"
 
 Server::Server(const char *port, const char *password)
 {
@@ -171,20 +171,14 @@ void    Server::ReadingforDescriptor(void)
             }
             else
             {
-                // we need a parsing string geved                                  --------------------!!!!!!!!!
-                //:Name COMMAND parameter list
-                // std::cout<< "BUFFER[" << it->first <<"]" << buffer;
-                // std::cout<< "BUFFER[" << buffer <<"]" <<std::endl;
                 it->second->setClosed(_ifSend);
                 int i = -1;
                 while (buffer[++i])
                 {
                     it->second->_tmpBuffer += buffer[i];
                 }
-                // std::cout <<"all=["<<buffer<<"]"<<std::endl;
                 if (it->second->_tmpBuffer.find('\n') != std::string::npos)
                 {
-                    std::cout <<"["<<it->second->_tmpBuffer<<"]"<<std::endl;
                     it->second->setInputBuffer(it->second->_tmpBuffer);
                     it->second->splitBufferToList();
                     it->second->setArguments();
@@ -195,37 +189,9 @@ void    Server::ReadingforDescriptor(void)
                     }
                     it->second->_tmpBuffer = "";
                 }
-
-
-                // it->second->setInputBuffer(fullBuffer);
-                //--------------------------     prints  arguments
-                // while (!it->second->getArguments().empty() || !it->second->getCommand().empty())
-                // {
-                //     std::cout<<"command=" <<it->second->getCommand()<<std::endl;
-                //     std::vector<std::string>v = it->second->getArguments();
-                //     int i = 0;
-                //     while(!v.empty())
-                //     {
-                //         std::cout<<"argument =["<<i<<"]"<<"{"<<v.at(0)<<"}"<<std::endl;
-                //         v.erase(v.begin());
-                //         i++;
-                //     }
-                //     it->second->setArguments();
-                // }
-              
             }
         }
-        // DEBUGGER();
-        if (FD_ISSET(it->first, &Desc._ER_fds))
-        {
-            std::cout<<" -------------------------&Desc._ER_fds)) "<<std::endl;
-        }
-        //  DEBUGGER();
-        if (FD_ISSET(it->first, &Desc._WR_fds))
-        {
-            std::cout<<" +++++++++++++++++++++++++&Desc._WR_fds))"<<std::endl;
-        }
-        //  DEBUGGER();
+
     }
     removefromMaps();
     _ifSend = false;

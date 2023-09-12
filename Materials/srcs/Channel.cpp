@@ -1,5 +1,5 @@
 #include "Channel.hpp"
-#include "../Debugger/debugger.hpp"
+#include "debugger.hpp"
 
 Channel::Channel(const std::string& channelName, const std::string& key) \
     : _channelName(channelName) \

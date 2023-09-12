@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <iterator>
-#include <arpa/inet.h> // Add this header for 'inet_addr'
+#include <arpa/inet.h> // for 'inet_addr'
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sstream>
@@ -16,13 +16,12 @@
 #include <stack>
 #include <iterator>
 #include <set>
-#include <utility> // for make_pair
-// #include <netdb.h> // for f
+#include <utility>
 #include <netinet/in.h>
 #include <stdlib.h>
-#include "../Client/Client.hpp"
-#include "../Command/Command.hpp"
-#include "../Channel/Channel.hpp"
+#include "Client.hpp"
+#include "Command.hpp"
+#include "Channel.hpp"
 
 class Command;
 

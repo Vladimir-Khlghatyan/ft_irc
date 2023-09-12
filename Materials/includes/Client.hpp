@@ -10,8 +10,8 @@
 #include <vector>
 #include <list>
 #include <sstream>
-#include "../irc_defs.hpp"
-#include "../Channel/Channel.hpp"
+#include "irc_defs.hpp"
+#include "Channel.hpp"
 
 class Channel;
 

@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <algorithm>
-#include "../Client/Client.hpp"
-#include "../Channel/Channel.hpp"
-#include "../irc_defs.hpp"
+#include "Client.hpp"
+#include "Channel.hpp"
+#include "irc_defs.hpp"
 
 class Client;
 
