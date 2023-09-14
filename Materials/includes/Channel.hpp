@@ -46,15 +46,15 @@ class Channel
         bool channelIsFull(void);
     
     private:
-    std::string             _channelName;
-    std::string             _key;
-    std::string             _topic;
-    bool                    _inviteOnly;
-    bool                    _topicMode;
-    int                     _limit;
+        std::string             _channelName;
+        std::string             _key;
+        std::string             _topic;
+        bool                    _inviteOnly;
+        bool                    _topicMode;
+        int                     _limit;
 
-    std::vector<Client*>    _clients;
-    std::vector<Client*>    _operators;
-    Client*                 _admin;
+        std::vector<Client*>    _clients;
+        std::vector<Client*>    _operators;
+        Client*                 _admin;
 
 };

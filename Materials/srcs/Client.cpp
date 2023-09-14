@@ -4,7 +4,6 @@
 Client::Client() : _fd(0)
 {
     _registered = false;
-    _passTryCount = 0;
     _ifClosed = false;
 }
 
@@ -14,12 +13,10 @@ Client::Client(int fd, struct sockaddr_in client_addr)
     this->_client_addr = client_addr;
 
     _registered = false;
-    _passTryCount = 0;
     _ifClosed = false;
 
-    // այս մասը պետք է ստուգել, արդյոք hostname-ը ճիշտ է ստացվում
-    char hostname[NI_MAXHOST];    
-    gethostname(hostname, sizeof(hostname));
+    char hostname[NI_MAXHOST];
+    getnameinfo((struct sockaddr*)&client_addr, sizeof(client_addr), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV);
     _hostname = hostname;
 }
 

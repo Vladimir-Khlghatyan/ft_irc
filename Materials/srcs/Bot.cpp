@@ -17,7 +17,7 @@ Bot::Bot()
 void Bot::Fetch(std::string &message)
 {
     std::string reply = "i am Bot i don't understand what you say";
-DEBUGGER();
+    DEBUGGER();
     if (!_replay.size())
         return ;
 
@@ -26,7 +26,7 @@ DEBUGGER();
         message = reply;
         return ;
     }
-DEBUGGER();
+    DEBUGGER();
     std::map<std::string, std::string>::iterator it = _replay.begin();
 
     for( ; it != _replay.end(); ++it)
@@ -45,7 +45,7 @@ DEBUGGER();
 void Bot::readFromMap(void)
 {
     std::string strData, str[2];
-DEBUGGER();
+    DEBUGGER();
     while (getline(_fileData, strData))
     {
         DEBUGGER();
@@ -54,7 +54,7 @@ DEBUGGER();
         {
             DEBUGGER();
             getline(ss, str[0], ':');                   // key  
-            getline(ss, str[1], '\0');                  // va   
+            getline(ss, str[1], '\0');                  // value 
             if (!str[0].empty() && !str[1].empty())
             {
                 _replay[str[0]] = str[1];

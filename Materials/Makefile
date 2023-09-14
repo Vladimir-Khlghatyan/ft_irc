@@ -1,4 +1,4 @@
-NAME			= ft_irc
+NAME			= ircserv
 CPP				= c++
 RMIF			= rm -f
 CPPFLAGS		= -Wall -Werror -Wextra -std=c++98 -I./includes

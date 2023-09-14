@@ -69,7 +69,6 @@ class Client
         
         bool        _ifClosed;
         bool        _registered;   // registration level must be 3 (password, nickname and username)
-        int         _passTryCount; // max 3 
 };
 
 #endif

@@ -51,9 +51,9 @@ class Command
         void commandTOPIC(Client *C);   // 13
         void commandPART(Client *C);    // 14
     private:
-        std::string _password;
+        std::string                 _password;
         std::map<std::string, FUNC> _commands;
-        std::vector<std::string> _arg;
-        Server*  _server;
-        Bot*     _bot;
+        std::vector<std::string>    _arg;
+        Server*                     _server;
+        Bot*                        _bot;
 };

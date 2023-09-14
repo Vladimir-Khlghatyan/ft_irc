@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (!argsAreValid(argv[1], argv[2])) // test
+    if (!argsAreValid(argv[1], argv[2]))
     {
         return 2;
     }

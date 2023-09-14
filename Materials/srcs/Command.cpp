@@ -301,6 +301,7 @@ void Command::commandPRIVMSG(Client *C)
                 return ;
             }
             DEBUGGER();
+
             client->sending(RPL_MSG(C->getPrefix(), "PRIVMSG", targets[i], message));
         }
     }
@@ -404,7 +405,7 @@ void Command::CommandJOIN(Client *C)
             return ;
         }
 
-        if (/*channel->getKey() != "" && */channel->getKey() != pass)
+        if (channel->getKey() != pass)
         {
             C->reply(ERR_BADCHANNELKEY(C->getNICK(), channelName, "Cannot join channel (+k)"));
             DEBUGGER();
@@ -527,7 +528,7 @@ void Command::commandINVITE(Client *C)
     Channel* channel = _server->getChannel(channelName);
     if (!channel)
     {
-        C->reply(ERR_NOSUCHNICK(C->getNICK(), channelName + static_cast<char>(1)));
+        C->reply(ERR_NOSUCHCHANNEL(C->getNICK(), channelName + static_cast<char>(1)));
         DEBUGGER();
         return ;
     }
