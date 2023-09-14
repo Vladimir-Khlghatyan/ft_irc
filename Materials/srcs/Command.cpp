@@ -124,7 +124,6 @@ void Command::commandHandler(Client* C)
     _arg = C->getArguments();
     std::string cmd = C->getCommand();
     std::map<std::string, FUNC>::iterator it = _commands.begin();
-    std::cout<<"command{"<<C->getCommand()<<"}"<<std::endl;//-------------------------------------------------------------------
     for( ; it != _commands.end(); ++it)
     {
         if (it->first == cmd)
@@ -277,18 +276,19 @@ void Command::commandPRIVMSG(Client *C)
                 return ;
             }
             DEBUGGER();
-            std::cout<<"["<<_arg[1]<<"]"<<std::endl;
-            if (_arg[1].find(' ') != std::string::npos
-                && _arg[1].substr(0,_arg[1].find(' ')) != "Bot" && _arg.size() > 2)
+
+
+            if (message == "BOT" || (message.find(' ') != std::string::npos
+                && message.substr(0, message.find(' ')) == "BOT"))
             {
-                _bot->Fetch(_arg, message);
-                C->sending(RPL_MSG(C->getPrefix(), "PRIVMSG", C->getNICK(), message));
+                _bot->Fetch(message);
+                channel->sendingForBot(C, message, "PRIVMSG");
                 DEBUGGER();
             }
             else
             {
                 channel->sending(C, message, "PRIVMSG");
-            DEBUGGER();
+                DEBUGGER();
             }
         }
         else

@@ -210,7 +210,7 @@ void	Client::sending(const std::string& massage)
     std::string buff = massage + "\r\n";
 
     if (_ifClosed || send(_fd, buff.c_str(), buff.length(), 0) == -1)
-        std::cout << "Error: can't send message to client." << std::endl;
+        std::cerr << "Error: can't send message to client." << std::endl;
 }
 
 void Client::reply(const std::string& reply)
@@ -218,7 +218,7 @@ void Client::reply(const std::string& reply)
     std::string buff = ":" + this->getPrefix() + " " + reply + "\r\n";
 
     if (send(_fd, buff.c_str(), buff.length(), 0) == -1)
-        std::cout << "Error: can't send message to client." << std::endl;
+        std::cerr << "Error: can't send message to client." << std::endl;
 }
 
 //-----------------------------------------------------------              living              --------------------------------------

@@ -160,7 +160,7 @@ void    Server::ReadingforDescriptor(void)
                 it->second->setClosed(true);
                 _ifSend = true;                                // Unexpected kick
                 addRemoveFd(it->second);
-                std::cout << "The client is disconnected Unexpected (fd = " << it->first<< ")." << std::endl;
+                std::cerr << "The client is disconnected Unexpected (fd = " << it->first<< ")." << std::endl;
             }
             else if (sizeBuff == 0)
             {

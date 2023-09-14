@@ -132,6 +132,14 @@ void Channel::sending(Client* C, const std::string& msg, const std::string& cmd)
             _clients[i]->sending(RPL_MSG(C->getPrefix(), cmd, _channelName, msg));
 }
 
+void Channel::sendingForBot(Client* C, const std::string& msg, const std::string& cmd)
+{
+    std::string mes = "@BOT ";
+    for (size_t i = 0; i < _clients.size(); ++i)
+        if (_clients[i] == C)
+            _clients[i]->sending(RPL_MSG(mes, cmd, _channelName, msg));
+}
+
 void Channel::nameReply(Client *C)
 {
     // sending TOPIC to new user    

@@ -14,8 +14,8 @@ class Bot
     public:
         Bot();
         ~Bot();
-        void Fetch(std::vector<std::string> arg,std::string &message);
-        void redeForMap(void);
+        void Fetch(std::string &message);
+        void readFromMap(void);
     private:
         std::map<std::string, std::string> _replay;
         std::ifstream _fileData;

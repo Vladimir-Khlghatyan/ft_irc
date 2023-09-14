@@ -33,6 +33,7 @@ class Channel
         void replyWho(Client* C, int mode);
         bool isAdmin(Client* C);
         void sending(Client* C, const std::string& msg, const std::string& cmd);
+        void sendingForBot(Client* C, const std::string& msg, const std::string& cmd);
         void nameReply(Client *C);
         void part(Client *C, std::string reason);
         bool emptyClients(void);

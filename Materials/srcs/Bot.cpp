@@ -3,41 +3,46 @@
 Bot::Bot()
 {
     DEBUGGER();
-    _fileData.open("./Bonus/Bot");
+    _fileData.open("./BotSource/Bot");
     if (!_fileData.is_open())
     {
         throw Server::Excp("Unable to open file");
     }
 
     DEBUGGER();
-    redeForMap();
+    readFromMap();
     DEBUGGER();
 }
 
-void Bot::Fetch(std::vector<std::string> arg,std::string &message)
+void Bot::Fetch(std::string &message)
 {
-    DEBUGGER();
+    std::string reply = "i am Bot i don't understand what you say";
+DEBUGGER();
     if (!_replay.size())
         return ;
-    DEBUGGER();
-    message = "i am Bot i don't understand what you say";
-    DEBUGGER();
-    std::map<std::string, std::string>::iterator it = _replay.begin();
+
+    if (message.find(' ') == std::string::npos)
+    {
+        message = reply;
+        return ;
+    }
 DEBUGGER();
+    std::map<std::string, std::string>::iterator it = _replay.begin();
+
     for( ; it != _replay.end(); ++it)
     {
-        if (it->first == arg[2])
+        if (it->first == message.substr(message.find(' ') +1))
         {
             message = it->second;
             DEBUGGER();
             return ;
         }
     }
+    message = reply;
     DEBUGGER();
 }
 
-
-void Bot::redeForMap(void)
+void Bot::readFromMap(void)
 {
     std::string strData, str[2];
 DEBUGGER();
@@ -45,12 +50,11 @@ DEBUGGER();
     {
         DEBUGGER();
         std::stringstream ss(strData);
-        if (strData.find(',') != std::string::npos)
+        if (strData.find(':') != std::string::npos)
         {
             DEBUGGER();
-            getline(ss, str[0], ',');                   // key  
+            getline(ss, str[0], ':');                   // key  
             getline(ss, str[1], '\0');                  // va   
-
             if (!str[0].empty() && !str[1].empty())
             {
                 _replay[str[0]] = str[1];
@@ -58,6 +62,7 @@ DEBUGGER();
         }
     }
 }
+
 Bot::~Bot()
 {
     _fileData.close();
