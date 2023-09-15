@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <ctime>
 
 class Bot
 {
@@ -16,6 +17,8 @@ class Bot
         ~Bot();
         void Fetch(std::string &message);
         void readFromMap(void);
+        std::string getCurrentTime(void);
+        
     private:
         std::map<std::string, std::string> _replay;
         std::ifstream _fileData;

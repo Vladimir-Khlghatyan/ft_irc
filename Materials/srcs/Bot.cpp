@@ -14,6 +14,13 @@ Bot::Bot()
     DEBUGGER();
 }
 
+
+Bot::~Bot()
+{
+    _fileData.close();
+}
+
+
 void Bot::Fetch(std::string &message)
 {
     std::string reply = "i am Bot i don't understand what you say";
@@ -27,11 +34,16 @@ void Bot::Fetch(std::string &message)
         return ;
     }
     DEBUGGER();
+    if ("Time" == message.substr(message.find(' ') + 1))
+    {
+        message = getCurrentTime();
+        return ;
+    }
     std::map<std::string, std::string>::iterator it = _replay.begin();
 
     for( ; it != _replay.end(); ++it)
     {
-        if (it->first == message.substr(message.find(' ') +1))
+        if (it->first == message.substr(message.find(' ') + 1))
         {
             message = it->second;
             DEBUGGER();
@@ -63,7 +75,19 @@ void Bot::readFromMap(void)
     }
 }
 
-Bot::~Bot()
+
+std::string Bot::getCurrentTime(void)
 {
-    _fileData.close();
+    time_t currentTime;
+    struct tm *localTime;
+    char timeString[100];
+
+    // Get the current time
+    time(&currentTime);
+    localTime = localtime(&currentTime);
+
+    // Format the time as a string
+    strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", localTime);
+
+    return std::string(timeString);
 }

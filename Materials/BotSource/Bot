@@ -1,6 +1,6 @@
 :hello my name is "BOT". Can I help you?
-hello:hello I can tell you what the set, map, unordered_map or vector is in C++ STL
-commands:"Bot set", "Bot map","Bot vector", "Bot unordered_map"
+hello:hello I can tell you what the set, map, unordered_map or vector is in C++ STL and what time is it 
+commands:"BOT set", "BOT map", "BOT vector", "BOT unordered_map", "BOT Time"
 set:Sets are a type of associative container in which each element has to be unique because the value of the element identifies it. The values are stored in a specific sorted order i.e. either ascending or descending. Time complexity: O(N) // N is the size of the set. Insertion of Elements – O(log N) Deletion of Elements – O(log N)
 map:Maps are associative containers that store elements in a mapped fashion. Each element has a key value and a mapped value. No two mapped values can have the same key values. Balanced Binary Search tree (BST) Insert. elements with a particular key in the map container –> O(log n). for searching elements in std::map is O(log n)
 unordered_map:std::unordered_map best case time complexity for searching is O(1) because elements are stored in a Hash table and therefore the key acts as an index while searching in unordered maps.
