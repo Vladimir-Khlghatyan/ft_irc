@@ -159,8 +159,8 @@ void    Server::ReadingforDescriptor(void)
                 FD_CLR(it->first, &this->Desc._READ_fds);
                 it->second->setClosed(true);
                 _ifSend = true;                                // Unexpected kick
-                addRemoveFd(it->second);
                 std::cerr << "The client is disconnected Unexpected (fd = " << it->first<< ")." << std::endl;
+                addRemoveFd(it->second);
             }
             else if (sizeBuff == 0)
             {
