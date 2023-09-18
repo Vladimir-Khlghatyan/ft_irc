@@ -10,16 +10,15 @@ int main(int argc, char *argv[])
     }
 
     if (!argsAreValid(argv[1], argv[2]))
-    {
         return 2;
-    }
-    try{
+
+    try {
         Server s(argv[1], argv[2]);
         s.start();
     }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl; // std::flush;
+    catch(const std::exception& e) {
+        std::cerr << e.what() << std::endl;
     }
+    
     return 0;
 }

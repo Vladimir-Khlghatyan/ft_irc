@@ -1,6 +1,8 @@
 #include "Server.hpp"
 #include "debugger.hpp"
 
+// ########################################################################################
+
 Server::Server(const char *port, const char *password)
 {
     this->_port = std::atoi(port);
@@ -9,23 +11,25 @@ Server::Server(const char *port, const char *password)
     _command = new Command(this);
 }
 
-Server::~Server(void)
-{
+// ########################################################################################
+
+Server::~Server(void) {
     delete _command;
 }
 
-//-------------------------------       Excp::Excp        ----------------------
+// ########################################################################################
 
-Server::Excp::Excp(const char *s)
-{
+Server::Excp::Excp(const char *s) {
     this->_s = const_cast<char*>(s);
 }
 
-const char  *Server::Excp::what() const throw()
-{
+// ########################################################################################
+
+const char  *Server::Excp::what() const throw() {
     return _s;
 }
-//------------------------------------------------------------------------------
+
+// ########################################################################################
 
 void    Server::initValueStruct(void)
 {
@@ -35,9 +39,9 @@ void    Server::initValueStruct(void)
     _server_addr.sin_addr.s_addr = INADDR_ANY;      // Accept connections from any IP address
 }
 
-//-------------------------------------------      Server  Bind    ---------------
+// ########################################################################################
 
-void    Server::bindListnServer(void)
+void    Server::bindListenServer(void)
 {
     // Create socket
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -76,32 +80,33 @@ void    Server::bindListnServer(void)
     }
 }
 
-void    Server::ClientConnect(void)
+// ########################################################################################
+
+void    Server::clientConnect(void)
 {
-    FD_ZERO(&Desc._READ_fds);    // initializing a descriptor set Desc._READ_fds to the null set
-    FD_ZERO(&Desc._WR_fds);      // initializing a descriptor set Desc._WR_fds to the null set
-    FD_ZERO(&Desc._ER_fds);      // initializing a descriptor set Desc._ER_fds to the null set
+    FD_ZERO(&_READ_fds);    // initializing a descriptor set _READ_fds to the null set
+    FD_ZERO(&_WR_fds);      // initializing a descriptor set _WR_fds to the null set
+    FD_ZERO(&_ER_fds);      // initializing a descriptor set _ER_fds to the null set
 
     _timeout.tv_sec = 2;    // waiting time (2 sec.)
     _timeout.tv_usec = 0;
 
-    FD_SET(_server_fd, &Desc._WR_fds); // adding the file descriptor _server_fd to the Desc._WR_fds set.
+    FD_SET(_server_fd, &_WR_fds); // adding the file descriptor _server_fd to the _WR_fds set.
 
-    std::map<int, Client*>::iterator it = this->_Clients.begin();
-    for(; it != _Clients.end(); ++it)
+    std::map<int, Client*>::iterator it = this->_clients.begin();
+    for(; it != _clients.end(); ++it)
     {
-        FD_SET(it->first, &Desc._READ_fds);
-        // FD_SET(it->first, &Desc._WR_fds); // because clients can always write
-        FD_SET(it->first, &Desc._ER_fds);
+        FD_SET(it->first, &_READ_fds);
+        FD_SET(it->first, &_ER_fds);
     }
-    _max_fd = _Clients.rbegin()->first + 1;
+    _max_fd = _clients.rbegin()->first + 1;
 
-    _ready_FD = select(_max_fd, &Desc._READ_fds, &Desc._WR_fds, &Desc._ER_fds, &_timeout);
+    _ready_FD = select(_max_fd, &_READ_fds, &_WR_fds, &_ER_fds, &_timeout);
 
     // ready for the specified events
     if (_ready_FD == -1)
     {
-       this->closeFreeALL();
+       this->closeAndFreeALL();
        throw Server::Excp("Error :occurred during 'select' operation");
     }
     else if (_ready_FD)
@@ -112,7 +117,7 @@ void    Server::ClientConnect(void)
         socklen_t len = sizeof(client_addr);
 
         // Check if the listening socket is ready
-        if (FD_ISSET(_server_fd, &Desc._READ_fds))
+        if (FD_ISSET(_server_fd, &_READ_fds))
         {
             int client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &len);
 
@@ -130,41 +135,42 @@ void    Server::ClientConnect(void)
                     throw Server::Excp("Error: setting client fd to non-blocking mode failed!");
                 }
 
-                std::cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << std::endl;
+                std::cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << ":";
+                std::cout << ntohs(client_addr.sin_port) << std::endl;
 
-                _Clients[client_fd] = new Client(client_fd, client_addr);
+                _clients[client_fd] = new Client(client_fd, client_addr);
             }
         }
     }
 }
 
-//------------------------------------------------------    iterator for Map   ------------------
+// ########################################################################################
 
-void    Server::ReadingforDescriptor(void)
+void    Server::readingforDescriptor(void)
 {
-    std::map<int, Client*>::iterator it = ++this->_Clients.begin(); // [0]index input _server_fd
+    std::map<int, Client*>::iterator it = ++this->_clients.begin(); // [0]index input _server_fd
     int sizeBuff = 0;
     char buffer[1025] = {0};
     
-    for( ;it != this->_Clients.end(); ++it) 
+    for(; it != this->_clients.end(); ++it) 
     {
         DEBUGGER();
-        if (FD_ISSET(it->first, &Desc._READ_fds))
+        if (FD_ISSET(it->first, &_READ_fds))
         {
             DEBUGGER();
             sizeBuff = recv(it->first, buffer, sizeof(buffer), 0);
             DEBUGGER();
             if (sizeBuff == -1)
             {
-                FD_CLR(it->first, &this->Desc._READ_fds);
+                FD_CLR(it->first, &this->_READ_fds);
                 it->second->setClosed(true);
-                _ifSend = true;                                // Unexpected kick
+                _ifSend = true; // Unexpected kick
                 std::cerr << "The client is disconnected Unexpected (fd = " << it->first<< ")." << std::endl;
                 addRemoveFd(it->second);
             }
             else if (sizeBuff == 0)
             {
-                FD_CLR(it->first, &this->Desc._READ_fds);
+                FD_CLR(it->first, &this->_READ_fds);
                 it->second->setClosed(true);
                 _command->commandQUIT(it->second);
                 std::cout << "The client is disconnected (fd = " << it->first<< ")." << std::endl;
@@ -174,9 +180,8 @@ void    Server::ReadingforDescriptor(void)
                 it->second->setClosed(_ifSend);
                 int i = -1;
                 while (buffer[++i])
-                {
                     it->second->_tmpBuffer += buffer[i];
-                }
+
                 if (it->second->_tmpBuffer.find('\n') != std::string::npos)
                 {
                     it->second->setInputBuffer(it->second->_tmpBuffer);
@@ -197,56 +202,47 @@ void    Server::ReadingforDescriptor(void)
     _ifSend = false;
 }
 
-//-------------------------------------------------      Manag Client   -------------------
+// ########################################################################################
 
-void Server::managClient(std::map<int, Client*>::iterator it)
+void Server::updateNickMap(Client* C, std::string& nick)
 {
-    const char *str = "hello client\n\r";
-    send(it->first, str, strlen(str), 0);
+    DEBUGGER();
+
+    std::string oldNick = C->getNICK();
+    if (this->getClient(oldNick))
+        _nickname.erase(oldNick);
+
+    _nickname[nick] = C->getFd();
 }
 
-//--------------------------------------------------      close Free ALL ------------------
-
-void Server::closeFreeALL(void)
-{
-    std::map<int, Client*>::iterator it = _Clients.begin();
-    for( ; it != _Clients.end(); ++it)
-    {
-        close(it->first);
-        if (it->second)
-            delete it->second;
-    }
-    _Clients.clear();
-}
+// ########################################################################################
 
 void Server::removefromMaps()
 {
-    Client* C;
-
     while(!_removedFDs.empty())
     {
-        C = _removedFDs.top();
-        std::map<std::string, int>::iterator it = _nickname.begin();
-        for( ; it != _nickname.end(); ++it)
+        Client* C = _removedFDs.top();
+        std::map<std::string, int>::iterator it1 = _nickname.begin();
+        for(; it1 != _nickname.end(); ++it1)
         {
             DEBUGGER();
-            if (it->first == C->getNICK())
+            if (it1->first == C->getNICK())
             {
                 DEBUGGER();
                 C->leavingALLChannelsUnexpected();
-                _nickname.erase(it);
+                _nickname.erase(it1);
                 break ;
             }
         }
-        std::map<int, Client*>::iterator it1 = _Clients.begin();
-        for(; it1 != _Clients.end();++it1)
+        std::map<int, Client*>::iterator it2 = _clients.begin();
+        for(; it2 != _clients.end();++it2)
         {
-            if (it1->second == C)
+            if (it2->second == C)
             {
                 DEBUGGER();
-                close(it1->first);
+                close(it2->first);
                 delete C;
-                _Clients.erase(it1);
+                _clients.erase(it2);
                 break ;
             }
         }
@@ -254,65 +250,12 @@ void Server::removefromMaps()
     }
 }
 
+// ########################################################################################
 
-//                     -----------------------  Server start  -------------------------------
-
-
-void    Server::start(void)
-{
-    _command->setPass(_password);
-    this->initValueStruct();
-
-    this->bindListnServer();
-    this->_Clients.insert(std::pair<int, Client*>(_server_fd, NULL));
-    _max_fd = _server_fd + 1;
-    std::cout << "Server listening on port "<< _port << std::endl;
-
-    for( ; ; )
-    {
-        this->ClientConnect();
-        this->ReadingforDescriptor();
-    }
-    closeFreeALL();
-    std::cout << "END :Server stopped" << std::endl;
-}
-
-//------------------------------------------------------------------------------
-
-std::string Server::getPASS(void)
-{
-    return _password;
-}
-
-Client* Server::getClient(const std::string& nickname)
-{
-    std::map<std::string, int>::iterator it = _nickname.find(nickname);
-    if (it == _nickname.end())
-    {
-        DEBUGGER();
-        return NULL;
-    }
-    return _Clients.find(it->second)->second;
-}
-
-
-//-----------------------------------------------------------               SET              ------------------
-
-
-void Server::updateNickMap(Client* C, std::string &nick)  //   all maps add Client
-{
-    DEBUGGER();
-    if (this->getClient(C->getNICK()))
-        _nickname.erase(C->getNICK());
-    DEBUGGER();
-    _nickname[nick] = C->getFd();
-}
-
-
-void Server::checkForCloseCannel(void)
+void Server::checkForCloseChannel(void)
 {
     std::set<Channel*>::iterator it = _channels.begin();
-    for ( ; it != _channels.end(); ++it)
+    for (; it != _channels.end(); ++it)
     {
         if ((*it)->emptyClients())
         {
@@ -322,37 +265,86 @@ void Server::checkForCloseCannel(void)
     }
 }
 
+// ########################################################################################
 
-//----------------------------------------------      get  
-
-
-
-Channel* Server::getChannel(std::string &name)
+Channel* Server::createChannel(const std::string &name, const std::string &pass)
 {
-    std::set<Channel*>::iterator it = _channels.begin();
-    for( ;it  != _channels.end(); ++it)
-    {
-        if ((*it)->getChannelName() == name)
-        {
-            return (*it);
-        }
-    }
-    return NULL;
+    Channel *channel = new Channel(name, pass);
+    _channels.insert(channel);
+    return channel;
 }
 
-
-//-----------------------------------------------------
-
-
-Channel *Server::createChannel(const std::string &name, const std::string &pass)
-{
-    Channel *chan = new Channel(name, pass);
-    _channels.insert(chan);
-    return chan;
-}
+// ########################################################################################
 
 void Server::addRemoveFd(Client* C)
 {
     if (C)
         _removedFDs.push(C);
 }
+
+// ########################################################################################
+
+std::string Server::getPASS(void) {
+    return _password;
+}
+
+// ########################################################################################
+
+Client* Server::getClient(const std::string& nickname)
+{
+    std::map<std::string, int>::iterator it = _nickname.find(nickname);
+    if (it == _nickname.end())
+        return NULL;
+
+    return _clients.find(it->second)->second;
+}
+
+// ########################################################################################
+
+Channel* Server::getChannel(std::string &name)
+{
+    std::set<Channel*>::iterator it = _channels.begin();
+    for(; it != _channels.end(); ++it)
+        if ((*it)->getChannelName() == name)
+            return (*it);
+
+    return NULL;
+}
+
+// ########################################################################################
+
+void Server::closeAndFreeALL(void)
+{
+    std::map<int, Client*>::iterator it = _clients.begin();
+    for( ; it != _clients.end(); ++it)
+    {
+        close(it->first);
+        if (it->second)
+            delete it->second;
+    }
+    _clients.clear();
+}
+
+// ########################################################################################
+
+void    Server::start(void)
+{
+    _command->setPass(_password);
+    this->initValueStruct();
+
+    this->bindListenServer();
+    this->_clients.insert(std::pair<int, Client*>(_server_fd, NULL));
+    _max_fd = _server_fd + 1;
+    std::cout << "Server listening on port "<< _port << std::endl;
+
+    while (true)
+    {
+        this->clientConnect();
+        this->readingforDescriptor();
+    }
+    
+    this->closeAndFreeALL();
+    std::cout << "END :Server stopped" << std::endl;
+}
+
+// ########################################################################################

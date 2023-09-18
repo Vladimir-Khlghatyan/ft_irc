@@ -30,26 +30,23 @@ class Server
     public:
         Server(const char *port, const char *password);
         ~Server(void);
-        void initValueStruct(void);
-        void bindListnServer(void);
-        void ClientConnect(void);
-        void ReadingforDescriptor(void);
-        void start(void);
-        void closeFreeALL(void);
-        void managClient(std::map<int, Client*>::iterator it);
-        bool correctPassword(int fdClient);
-        void updateNickMap(Client* C, std::string &nick);
-        void checkForCloseCannel(void);
-        Channel* getChannel(std::string &name);
-        Channel *createChannel(const std::string &name, const std::string &pass);
-        void removefromMaps(void);
-        void addRemoveFd(Client* C);
-        bool isExit(void);
-        void setExit(bool exit);
 
+        void        initValueStruct(void);
+        void        bindListenServer(void);
+        void        clientConnect(void);
+        void        readingforDescriptor(void);
+        void        updateNickMap(Client* C, std::string& nick);
+        void        removefromMaps(void);
+        void        checkForCloseChannel(void);
+        Channel*    createChannel(const std::string& name, const std::string& pass);
+        void        addRemoveFd(Client* C);
 
         std::string getPASS(void);
-        Client* getClient(const std::string& nickname);
+        Client*     getClient(const std::string& nickname);
+        Channel*    getChannel(std::string &name);
+
+        void        closeAndFreeALL(void);
+        void        start(void);
 
         class Excp : public std::exception
 		{
@@ -59,18 +56,16 @@ class Server
 			private:
 				char *_s;
 		};
-        struct selectDescription 
-        {
-            fd_set      _WR_fds;
-            fd_set      _READ_fds;
-            fd_set      _ER_fds;
-        } Desc;
 
+        fd_set                      _WR_fds;
+        fd_set                      _READ_fds;
+        fd_set                      _ER_fds;
         bool                        _ifSend;
-    private:
+
+    private:        
         struct sockaddr_in          _server_addr;
         struct timeval              _timeout;
-        std::map<int, Client*>      _Clients;   // fd : client
+        std::map<int, Client*>      _clients;   // fd : client
         std::map<std::string, int>  _nickname;  // nick : fd
         std::set<Channel*>          _channels;
         std::stack<Client*>         _removedFDs;

@@ -356,7 +356,7 @@ void Command::CommandJOIN(Client *C)
     if (_arg[0] == "0")
     {
         C->leavingForChannels(NULL, "");
-        _server->checkForCloseCannel();
+        _server->checkForCloseChannel();
         DEBUGGER();
         return ;
     }
@@ -494,7 +494,7 @@ void Command::commandKICK(Client *C)
         client->leavingForChannels(channel, reason);
         DEBUGGER();
     }
-    _server->checkForCloseCannel();
+    _server->checkForCloseChannel();
 }
 
 void Command::commandINVITE(Client *C)
@@ -818,7 +818,7 @@ void Command::commandQUIT(Client *C)
     DEBUGGER();
     close(C->getFd());
     DEBUGGER();
-    FD_CLR(C->getFd(), &_server->Desc._READ_fds);
+    FD_CLR(C->getFd(), &_server->_READ_fds);
     _server->addRemoveFd(C);
     DEBUGGER();
 }
@@ -942,6 +942,6 @@ void Command::commandPART(Client *C)
         C->leavingForChannels(channel, reason);
     }
      DEBUGGER();
-    _server->checkForCloseCannel();
+    _server->checkForCloseChannel();
      DEBUGGER();
 }
