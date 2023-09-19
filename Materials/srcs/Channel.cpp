@@ -65,7 +65,7 @@ void Channel::joinClient(Client* C)
     for(size_t i = 0; i < _clients.size(); ++i)
         _clients[i]->sending(RPL_JOIN(C->getPrefix(), _channelName));
 
-    this->setAdmin(C->ifClosed());
+    this->setAdmin(C->isClosed());
     this->nameReply(C);
 }
 
@@ -193,7 +193,7 @@ void Channel::part(Client *C, std::string reason)
     it = std::find(_operators.begin(), _operators.end(), C);
     if (it != _operators.end())
         _operators.erase(it);
-    this->setAdmin(C->ifClosed());
+    this->setAdmin(C->isClosed());
 }
 
 bool Channel::emptyClients(void)
@@ -207,7 +207,7 @@ void Channel::replyWho(Client *C, int mode)
     std::vector<std::string> atribut;
     for(size_t i = 0; i < _clients.size(); ++i)
     {
-        atribut = _clients[i]->getClientAtribut();
+        atribut = _clients[i]->getClientAtributs();
         replay = RPL_WHOREPLY(C->getNICK(), _channelName, atribut[1], atribut[2], atribut[0], "H", atribut[3]);
 
         if (!mode || this->isOperator(C))

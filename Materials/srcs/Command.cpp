@@ -190,7 +190,7 @@ void Command::commandNICK(Client* C)
     DEBUGGER();
     C->setNICK(nick);
     DEBUGGER();
-    C->checkForRegistered();
+    C->checkForRegistration();
     DEBUGGER();
 }
 
@@ -213,7 +213,7 @@ void Command::commandUSER(Client *C)
         return ;
     }
     C->setUSER(_arg[0], _arg[3]);
-    C->checkForRegistered();
+    C->checkForRegistration();
 }
 
 void Command::commandPRIVMSG(Client *C)
@@ -355,7 +355,7 @@ void Command::CommandJOIN(Client *C)
 
     if (_arg[0] == "0")
     {
-        C->leavingForChannels(NULL, "");
+        C->leaveChannel(NULL, "");
         _server->checkForCloseChannel();
         DEBUGGER();
         return ;
@@ -411,7 +411,7 @@ void Command::CommandJOIN(Client *C)
             DEBUGGER();
             return ;
         }
-        C->joinToChannel(channel);
+        C->joinTheChannel(channel);
 
         
         DEBUGGER();
@@ -489,9 +489,9 @@ void Command::commandKICK(Client *C)
             reason = "No reason specified.";
 
         DEBUGGER();
-        channel->kickClient(client, reason, client->ifClosed());
+        channel->kickClient(client, reason, client->isClosed());
         DEBUGGER();
-        client->leavingForChannels(channel, reason);
+        client->leaveChannel(channel, reason);
         DEBUGGER();
     }
     _server->checkForCloseChannel();
@@ -793,7 +793,7 @@ void Command::commandWHO(Client *C)
         C->reply(ERR_NOSUCHNICK(C->getNICK(), _arg[0]));
         return ;
     }
-    std::vector<std::string> atribut = client->getClientAtribut();
+    std::vector<std::string> atribut = client->getClientAtributs();
 
     C->sending(RPL_WHOREPLY(C->getNICK(), "*", atribut[1], atribut[2], atribut[0], "H", atribut[3]));
     C->sending(RPL_ENDOFWHO(C->getNICK(), _arg[0]));
@@ -812,7 +812,7 @@ void Command::commandQUIT(Client *C)
             reply += " " + _arg[i];
     }
     DEBUGGER();
-    C->leavingALLChannels(reply);
+    C->leaveALLChannels(reply);
     DEBUGGER();
 
     DEBUGGER();
@@ -939,7 +939,7 @@ void Command::commandPART(Client *C)
              DEBUGGER();
             return ;
         }
-        C->leavingForChannels(channel, reason);
+        C->leaveChannel(channel, reason);
     }
      DEBUGGER();
     _server->checkForCloseChannel();

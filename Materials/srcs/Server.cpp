@@ -229,7 +229,7 @@ void Server::removefromMaps()
             if (it1->first == C->getNICK())
             {
                 DEBUGGER();
-                C->leavingALLChannelsUnexpected();
+                C->leaveALLChannelsUnexpected();
                 _nickname.erase(it1);
                 break ;
             }
