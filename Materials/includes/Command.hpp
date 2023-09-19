@@ -22,34 +22,30 @@ class Command
     public:
         Command(Server *server);
         ~Command();
-        //--------------------------------------------      set     ---
+
         void setPass(std::string password);
         std::string getPass(void);
-        bool passwordIsCorrect(Client* C);
-        std::vector<std::string> stringSplitToVector(std::string);
-        //---------------------------------------------   utils     ---
-
         bool nickIsCorrect(std::string buffer);
-        std::map<std::string, std::string> stringToMap(std::string &keys, std::string &values);
+        std::vector<std::string> stringSplitToVector(std::string keys);
+        std::map<std::string, std::string> stringToMap(std::string& keys, std::string& values);
 
-        //---------------------------------------------   commands  ---
-        void commandHandler(Client* C);
-        
-        void commandNICK(Client* C);    // 0
-        void commandPASS(Client* C);    // 1
-        void commandUSER(Client *C);    // 2
-        void CommandPING(Client *C);    // 3
-        void CommandPONG(Client *C);    // 4
-        void CommandCAP(Client *C);     // 5
-        void CommandJOIN(Client *C);    // 6
-        void commandPRIVMSG(Client *C); // 7
-        void commandKICK(Client *C);    // 8
-        void commandINVITE(Client *C);  // 9
-        void commandMODE(Client *C);    // 10
-        void commandWHO(Client *C);     // 11
-        void commandQUIT(Client *C);    // 12
-        void commandTOPIC(Client *C);   // 13
-        void commandPART(Client *C);    // 14
+        void commandHandler(Client* C);        
+        void commandPASS(Client* C);
+        void commandNICK(Client* C);
+        void commandUSER(Client* C);
+        void CommandPING(Client* C);
+        void CommandPONG(Client* C);
+        void CommandCAP(Client* C);
+        void CommandJOIN(Client* C);
+        void commandPRIVMSG(Client* C);
+        void commandKICK(Client* C);
+        void commandINVITE(Client* C);
+        void commandMODE(Client* C);
+        void commandWHO(Client* C);
+        void commandQUIT(Client* C);
+        void commandTOPIC(Client* C);
+        void commandPART(Client* C);
+
     private:
         std::string                 _password;
         std::map<std::string, FUNC> _commands;
