@@ -1,5 +1,4 @@
-#ifndef BOT_HPP
-#define BOT_HPP
+#pragma once
 
 #include "Server.hpp"
 #include "debugger.hpp"
@@ -15,13 +14,11 @@ class Bot
     public:
         Bot();
         ~Bot();
-        void Fetch(std::string &message);
-        void readFromMap(void);
+        void        fetch(std::string& message);
+        void        readFromMap(void);
         std::string getCurrentTime(void);
         
     private:
-        std::map<std::string, std::string> _replay;
-        std::ifstream _fileData;
+        std::map<std::string, std::string>  _reply;
+        std::ifstream                       _fileData;
 };
-
-#endif

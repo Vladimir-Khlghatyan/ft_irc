@@ -281,7 +281,7 @@ void Command::commandPRIVMSG(Client *C)
             if (message == "BOT" || (message.find(' ') != std::string::npos
                 && message.substr(0, message.find(' ')) == "BOT"))
             {
-                _bot->Fetch(message);
+                _bot->fetch(message);
                 channel->sendingForBot(C, message, "PRIVMSG");
                 DEBUGGER();
             }
