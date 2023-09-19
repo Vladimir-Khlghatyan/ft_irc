@@ -14,7 +14,6 @@ class Channel
         Channel(const std::string& channelName, const std::string& key);
         ~Channel();
 
-    public:
         void setKey(const std::string& key);
         void setTopic(const std::string& topic);
         void setAdmin(bool flagClosed);
@@ -25,25 +24,25 @@ class Channel
         std::string getChannelName(void);
         std::string getKey(void);
         std::string getTopic(void);
-        int getChannelLimit(void);
+        int         getChannelLimit(void);
+        Client*     getClientByNick(std::string nickname);
 
         void joinClient(Client* C);
         void kickClient(Client* C, const std::string& reason, bool flagClosed);
         bool isInChannel(Client* C);
-        void replyWho(Client* C, int mode);
         bool isAdmin(Client* C);
-        void sending(Client* C, const std::string& msg, const std::string& cmd);
-        void sendingForBot(Client* C, const std::string& msg, const std::string& cmd);
-        void nameReply(Client *C);
-        void part(Client *C, std::string reason);
-        bool emptyClients(void);
-        bool isOperator(Client *C);
+        bool isOperator(Client* C);
         bool isInviteOnly(void);
         bool topicModeIsOn(void);
-        Client *getClientByNick(std::string nickname);
-        void addOperator(Client *C);
-        void removeOperator(Client *C);
         bool channelIsFull(void);
+        void sending(Client* C, const std::string& msg, const std::string& cmd);
+        void sendingForBot(Client* C, const std::string& msg, const std::string& cmd);
+        void nameReply(Client* C);
+        void replyWho(Client* C, int mode);
+        void part(Client* C, std::string reason);
+        void addOperator(Client* C);
+        bool emptyClients(void);
+        void removeOperator(Client* C);
     
     private:
         std::string             _channelName;
@@ -56,5 +55,4 @@ class Channel
         std::vector<Client*>    _clients;
         std::vector<Client*>    _operators;
         Client*                 _admin;
-
 };
